@@ -150,6 +150,293 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL%EF%BC%9A%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://gitee.com/h428/img/raw/master/base/avatar.jpg">
+      <meta itemprop="name" content="h428">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="h428 的个人博客">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/09/17/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL%EF%BC%9A%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">MySQL 基本原理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-09-17 11:14:14 / 修改时间：11:14:32" itemprop="dateCreated datePublished" datetime="2020-09-17T11:14:14+08:00">2020-09-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="存储引擎">1. 存储引擎</h1>
+<ul>
+<li>常见的存储引擎有：MyISAM （发音类似 My I SAM）、InnoDB、MEMORY、Archive</li>
+</ul>
+<p><strong>MyISAM</strong></p>
+<ul>
+<li>MyISAM 特性为
+<ul>
+<li>使用表级索，并发性差，不支持事务</li>
+<li>主机宕机后，MyISAM 表已损坏，灾难性恢复不佳</li>
+<li>可以配合锁，实现操作系统下的复制、备份、迁移</li>
+<li>只缓存索引，数据的缓存是利用操作系统缓冲区来实现的，可能引发过多的系统调用且效率不佳</li>
+<li>数据紧凑存储（类似线性表的方式进行组织），因此可以获得更小的索引和更快的全表扫描性能</li>
+</ul></li>
+<li>MyISAM 索引原理：
+<ul>
+<li>MyISAM 数据可以看成按顺序表的形式组织，每行记录有自己的地址</li>
+<li>MyISAM 使用 B+ 树作为索引结构，当创建索引列时，会使用该列的数据构造一个 B+ 树，而该 B+ 树的叶节点的 data 域存放的就是对应数据记录的地址</li>
+<li>根据上述索引原理可以看出，MyISAM 数据的组织顺序与主键无关，主键索引除了要求 key 唯一外，与其他索引无区别，因此 MyISAM 的主键索引相对于 InnoDB 来说是非聚簇索引</li>
+</ul></li>
+</ul>
+<p><strong>InnoDB</strong></p>
+<ul>
+<li>MySQL 5.5 后默认使用 InnoDB 存储引擎</li>
+<li>其优点为：灾难恢复性好，支持事务，使用行级锁，支持外键关联，支持热备份</li>
+<li>对于 InnoDB 的数据表，其数据的物理组织形式是簇表，即主键索引为聚簇索引，数据会按主键的顺序进行物理分布</li>
+<li>InnoDB 还实现了缓冲管理，不仅能缓冲索引也能缓冲数据，并且会自动创建散列索引以加快数据的获取</li>
+<li>InnoDB 索引原理：
+<ul>
+<li>虽然 InnoDB 也使用 B+ 树作为索引结构，但具体实现方式却与 MyISAM 截然不同</li>
+<li>第一个重大区别就是 InnoDB 的数据文件本身就是索引文件，即在 InnoDB 中，数据文件本身就是根据主键按照 B+ 树组织的一个索引结构，这棵 B+ 树的 data 域保存了完整的数据记录</li>
+<li>区别于 MyISAM，InnoDB 的主键索引为聚簇索引，数据按照主键进行组织</li>
+<li>因此，根据 InnoDB 的这种数组组织原理，InnoDB 要求表必须有主键（而 MyISAM 可以没有主键），否则无法根据主键组织数据的存储</li>
+<li>如果没有显式指定主键，MySQL 会自动选择一个可以唯一标识数据记录的列作为主键，如果不存在这种列，MySQL 会自动为 InnoDB 生成一个隐含字段作为主键，这个字段长度为诶 6 Byte，类型为长整型</li>
+<li>第二个与 MyISAM 索引的区别就是：InnoDB 的辅助索引的 data 域存储相应记录的主键的值而不是数据的地址，即 InnoDB 的所有辅助索引都要引用主键作为 data 域</li>
+<li>显然，聚簇索引的这种实现方式使得按主键搜索十分高效，但是根据辅助索引时需要检索索引两边：首先检索辅助索引获得主键，然后用主键到主索引中检索获得记录</li>
+<li>根据上述 InnoDB 的聚簇索引原理，就很容易明白为什么不建议使用过长的字段作为主键，因为所有的辅助索引都引用该主索引，过长的主索引将导致辅助索引变的过大</li>
+<li>再者，对于 InnoDB，使用非单调的字段作为主键也会产生问题，其会导致在插入新记录后，数据文件为了维持 B+ 树的平衡性而频繁地调整或旋转，十分低效，因此对于 InnoDB 存储引擎，主键应选择为自增长或者按照插入顺序增长，否则会影响插入的性能（过多的 B+ 树平衡旋转调整）</li>
+</ul></li>
+</ul>
+<p><strong>Memory</strong></p>
+<ul>
+<li>提供内存表，也不支持事务和外键</li>
+<li>查询生成的临时表就是采用 Memory 引擎</li>
+<li>由于数据存储在内存中，显著提高数据的访问速度，可用于缓存会频繁访问的、可以重构的数据，计算结果、统计值、中间结果等</li>
+<li>优点为：
+<ul>
+<li>MEMORY表 的每个表可以有多达 32 个索引，每个索引 16 列，以及 500 字节的最大键长度</li>
+<li>可以在一个 MEMORY 表中有非唯一键值</li>
+<li>MEMORY 支持 HASH 索引</li>
+</ul></li>
+<li>缺点为：
+<ul>
+<li>使用表级锁，虽然内存访问快，但如果频繁地读写，表级锁会成为瓶颈</li>
+<li>只支持固定大小的行，varchar 类型字段会因为存储为定长的 char 类型，浪费空间</li>
+<li>不支持 text, blob 字段，当查询需要到临时表时，如果表中有 TEXT, BLOB 字段，那么会转换为基于磁盘的 MyISAM 表，严重降低性能</li>
+<li>由于内存资源成本昂贵，一般不建议设置过大的内存表，如果内存表满了，可以通过清楚数据或者掉秤内存表参数来避免报错</li>
+<li>服务器重启后数据会丢失，对于 Memory 表的复制和维护需要特别小心</li>
+</ul></li>
+</ul>
+<p><strong>InnoDB 与 MyISAM 的大致区别以及如何选择</strong></p>
+<ul>
+<li>从 MySQL5.5.5 以后，InnoDB 是默认引擎</li>
+<li>InnoDB 支持事务，MyISAM 不支持，这一点是非常之重要；事务是一种高级的处理方式，如在一些列增删改中只要哪个出错还可以回滚还原，而 MyISAM 就不可以了</li>
+<li>MyISAM 适合查询以及插入为主的应用，InnoDB 适合频繁修改以及涉及到安全性较高的应用</li>
+<li>InnoDB 支持外键，MyISAM 不支持</li>
+<li>它们的索引原理不同</li>
+<li>InnoDB 支持 MVCC, 而 MyISAM 不支持</li>
+<li>MySQL 5.6 以前的版本，只有 MyISAM 存储引擎支持全文索引；MySQL 5.6 及以后的版本，MyISAM 和 InnoDB 存储引擎均支持全文索引</li>
+<li>InnoDB 中不保存表的行数，如 <code>select count(*) from table</code> 时，InnoDB 需要扫描一遍整个表来计算有多少行，但是 MyISAM 只要简单的读出保存好的行数即可；注意的是，当 count(*) 语句包含 where 条件时 MyISAM 也需要扫描整个表</li>
+<li>对于自增长的字段，InnoDB 中必须包含只有该字段的索引，但是在 MyISAM 表中可以和其他字段一起建立联合索引</li>
+<li>清空整个表时，InnoDB 是一行一行的删除，效率非常慢；MyISAM 则会重建表</li>
+<li>InnoDB 支持行锁（某些情况下还是锁整表，如 update table set a=1 where user like '%lee%'），而 MyISAM 为表锁</li>
+<li>有人说 MYISAM 只能用于小型应用，其实这只是一种偏见，如果数据量比较大，这是需要通过升级架构来解决，比如分表分库，读写分离，而不是单纯地依赖存储引擎</li>
+<li>现在一般都是选用 InnoDB 了，主要是 MyISAM 的全表锁，读写串行问题，并发效率锁表，效率低，MyISAM 对于读写密集型应用一般是不会去选用的</li>
+</ul>
+<h1 id="事务特性">2. 事务特性</h1>
+<ul>
+<li>事务：程序中的一系列相关操作</li>
+<li>事务的特性：原子性（Atomicity）、一致性（Consistency）、隔离性（Isolation）、持久性（Durability），简称为 &quot;ACID&quot; 特性</li>
+<li>Atomiticy : 事务是数据库操作的逻辑工作单位，不可分割，所有操作要么全部成功，要么全部失败</li>
+<li>Consistency ：事务执行的结果必须是使数据库从一个一致性状态变到另一个一致性状态
+<ul>
+<li>因此当数据库只包含成功事务提交的结果时，就说数据库处于一致性状态</li>
+<li>如果数据库系统 运行中发生故障，有些事务尚未完成就被迫中断，这些未完成事务对数据库所做的修改有一部分已写入物理数据库，这时数据库就处于一种不正确的状态，或者说是不一致的状态</li>
+</ul></li>
+<li>Isolation : 一个事务的执行不能干扰其他事务，即一个事务的内部操作对其他操作是隔离的，并发执行之间不能互相干扰，事务有 4 种隔离级别</li>
+<li>Durability : 指的是事务一旦成功提交，则它对数据的改变就应该是永久性的，不能回滚，接下来的其它操作或者故障不应该对其执行结果有任何影响</li>
+</ul>
+<h1 id="隔离级别">3. 隔离级别</h1>
+<ul>
+<li>当多个线程同时操纵数据库时，数据库系统要能进行隔离操作，以保证各个线程获取的数据的准确性</li>
+<li>脏读：一个事务堵到了另一个事务未提交的数据</li>
+<li>不可重复读：对于数据库的某行数据，一个事务内的多次查询返回了不同的记录值（因为第二次查询该行时已经被另一个事务修改了）</li>
+<li>幻读：幻读的重点在于 insert，T1 批量查询范围记录或更新多条记录，然后等待提交，此时 T2 插入一条满足 T1 条件的新数据并成功提交，导致事务 T1 再次使用同样的选择条件读取的时候，得到了比第一次读取更多的数据集，就好像产生了幻觉一样</li>
+<li>不可重复读和幻读的区别：
+<ul>
+<li>不可重复读重点在于 update 和 delete，而幻读的重点在于 insert</li>
+<li>如果使用锁机制来实现这两种隔离级别，在可重复读中，该 sql 第一次读取到数据后，就将这些数据加锁，其它事务无法修改这些数据，就可以实现可重复读了</li>
+<li>但这种方法却无法锁住 insert 的数据，所以当事务 A 先前读取了数据，或者修改了全部数据，事务 B 还是可以 insert 数据提交，这时事务 A 就会发现莫名其妙多了一条之前没有的数据，这就是幻读，不能通过行锁来避免，需要Serializable隔离级别，读用读锁，写用写锁，读锁和写锁互斥，这么做可以有效的避免幻读、不可重复读、脏读等问题，但会极大的降低数据库的并发能力</li>
+<li>所以说不可重复读和幻读最大的区别，就在于如何通过锁机制来解决他们产生的问题</li>
+<li>上文说的，是使用悲观锁机制来处理这两种问题，但是 MySQL、ORACLE、PostgreSQL 等成熟的数据库，出于性能考虑，都是使用了以乐观锁为理论基础的MVCC（多版本并发控制）来避免这两种问题</li>
+</ul></li>
+<li>隔离级别详细大致如下：</li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">隔离级别</th>
+<th style="text-align: center;">英文</th>
+<th style="text-align: center;">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">读未提交</td>
+<td style="text-align: center;">read uncommited</td>
+<td style="text-align: center;">会脏读，也不可重复读，会幻读</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">读已提交</td>
+<td style="text-align: center;">read commited</td>
+<td style="text-align: center;">避免脏读，但不可重复读，会幻读</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">可重复读</td>
+<td style="text-align: center;">repeatable read</td>
+<td style="text-align: center;">避免脏读，且可重复读，但会幻读</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">序列化</td>
+<td style="text-align: center;">serializable</td>
+<td style="text-align: center;">可避免脏读、不可重复读、幻读</td>
+</tr>
+</tbody>
+</table>
+<p><strong>InnoDB 通过什么方式解决幻读的问题</strong></p>
+<ul>
+<li><a href="https://github.com/Yhzhtk/note/issues/42" target="_blank" rel="noopener">MySQL 的 RR 如何防止幻读</a></li>
+<li>根据标准，RR 隔离级别并不能避免幻读，但实际上，InnoDB 的 RR 级别通过 MVCC 和 next-key lock 解决了幻读的问题，</li>
+<li>要说明白这个问题，首先要明白，MySQL 中的读分为快照读和当前读</li>
+<li>快照读：即普通的 select，例如 <code>select * from table</code>，InnoDB 在执行当前读之前会备份快照，之后其他事务的快照读都会基于该快照继续操作，这样其他后开的事务就看不到当前事务中的内容（其实每个 select 都有自己的快照）</li>
+<li>当前读：特殊的读操作，插入/更新/删除，都属于当前读，处理的都是当前读数据，需要加锁
+<ul>
+<li><code>select * from table where ? lock in share mode</code></li>
+<li><code>select * from table where ? for update</code></li>
+<li><code>insert, update, delete</code></li>
+</ul></li>
+<li>假设有两个事务 T1 和 T2，T1 执行批量查询（快照读）或者批量更新（当前读），T2 执行插入满足 T1 查询条件的数据，我们以此为例说明 MySQL 下幻读的解决</li>
+<li>对于快照读，通过 MVCC 与事务版本号在解决不可重复读的同时解决了幻读，详细参考 <a href="#4-mvcc-原理">MVCC 原理</a>
+<ul>
+<li>对于 RR 下的快照读，由于引入 MVCC 机制，在 T1 开启事务后，其能查询的到的数据保持为当前 readview 所允许读到的最新数据，因此天然地可避免幻读</li>
+<li>即使此时 T2 开事务插入数据，由于其版本号大于 T1 版本号，因此插入的数据会被 T1 的 readview 过滤并不会被 T1 读到，从而避免了幻读</li>
+<li>注意，MVCC 快照读本身就包括两部分可见：1、事务开始前已提交的可见 2、自己本事务的修改可见，因此若 T2 先开事务并插入数据但未提交，插入的数据对于 T1 仍然不可见，RR 有个一致性快照（T2 先开事务插入数据但未提交属于 MVCC 解决脏读问题）</li>
+</ul></li>
+<li>对于当前读（写也算当前读），InnoDB 通过 Next-Key 锁来解决幻读，Next-Key 锁是行锁和GAP（间隙锁）的合并，详细参考 <a href="#5-next-key-锁">Next-Key 锁</a></li>
+</ul>
+<h1 id="mvcc-原理">4. MVCC 原理</h1>
+<ul>
+<li><a href="https://www.cnblogs.com/rongdi/p/13378892.html" target="_blank" rel="noopener">参考地址</a></li>
+<li>MVCC 的作用：
+<ul>
+<li>用于事务的回滚 -&gt; undo log</li>
+<li>事务的在尽量不加锁的情况下进行并发控制</li>
+<li>解决了快照读下的幻读问题</li>
+</ul></li>
+</ul>
+<p><strong>MVCC 实现原理</strong></p>
+<ul>
+<li>InnoDB 为数据表增加两个隐藏列 DATA_TRX_ID 和 DATA_ROLL_PTR，用于实现 MVCC，其中 DATA_TRX_ID 表示事务 id，DATA_ROLL_PTR 指向 undo log 指针，注意并不是所谓的 delete_trx_id <img src="https://gitee.com/h428/img/raw/master/note/00000137.jpg" alt="隐藏列" /></li>
+<li>当事务 A 对 x 进行更新后，该行即产生了一个新版本和旧版本，假设插入之前该行的事务 ID 为 100，当前事务 A 的事务 ID 为 200，操作过程如下：
+<ul>
+<li>对 ID = 1 加排他锁</li>
+<li>把原有数据拷贝到 undo log 中</li>
+<li>修改行值并更新 DATA_TRX_ID 为当前事务 ID，并将 DATA_ROLL_PTR 指向 undo log 中的记录</li>
+<li>注意 undo log 是一个链表，可能 B 事务在 A 之后开并先执行了 update，这时 A update 会锁住，B commit 后 A 可以继续，若是可重复读，但能访问的数据不是前一个节点而应该是前前节点，因为 A 先于 B 开启，不能读到 B update 之后的数据，所以必须以链表形式保存下所有的更新记录</li>
+</ul></li>
+<li>基于上述操作，如何判断读取的时候应该使用哪个版本？MySQL 引入了当前状态的 ReadView 的概念，主要包含如下属性：
+<ul>
+<li>mIds : 代表生成 ReadView 时，当前活跃的事务 id 但不包括当前事务 id，活跃即开启了还没提交</li>
+<li>min_trx_id : mIds 中的最小值，即最早开的还活跃的事务</li>
+<li>max_trx_id : 生成 ReadView 时，最大的事务 id，注意不要理解成 mIds 中最大的 ID，对于 RR 快照读，由于需要可重复读，一般只生成一次 ReadView，此时 max_trx_id 为本事务的 id；但对于 RC，由于需要读取到其他后开事务 commit 后的数据，因此需要多次生成 ReadView，因此此时 max_trx_id 可能大于当前事务 id</li>
+<li>creator_trx_id : 当前事务 id</li>
+</ul></li>
+<li>ReadView 引入上述 4 个属性后，如何判断读取哪个版本的数据呢？
+<ul>
+<li>如果被访问的数据的 data_trx_id 小于 min_trx_id，则表示该版本的数据在生成 ReadView 之前已经 commit，可以访问</li>
+<li>如果被访问数据的 data_trx_id 大于 max_trx_id，表示该版本的数据是在 ReadView 生成之后新生成的事务写入的，当前 ReadView 不能访问</li>
+<li>如果被访问数据的 data_trx_id 处于区间 <code>[min_trx_id, max_trx_id]</code>，则判断该数据的 data_trx_id 是否处于 mIds 列表，则表示生成 ReadView 时该数据为还活跃着的事务修改的，不能访问（这也是为什么不把自己的 id 放入 mIds 中，否则导致自己修改的无法访问）；如果不在，则说明生成 ReadView 时该版本的事务已经提交，可以访问（读已提交则需要生成多次 ReadView 以保证读到更新的数据）</li>
+</ul></li>
+</ul>
+<p><strong>MVCC 在 RC 和 RR 隔离级别下有啥区别</strong></p>
+<ul>
+<li>先说 RC 级别，两个版本不一致，说明可能事务 A 两次使用的 ReadView 里的内容肯定是有不一样，结合 B 事务中间有提交，而提交事务很明显会影响到 mIds 当前活跃事务列表，因为事务提交之后就不是活跃事务了不可能再出现在 mIds 列表中了，这一点很好理解</li>
+<li>再来看 RR 隔离级别事务 A，如果要两次读取的 x 值一致，除非两次用来判定的 ReadView 没有啥变化，这不由得让我们想起了缓存的用法，是不是可以在 A 事务开启的时候生成一个 ReadView，然后在整个 A 事务期间都用这一份 ReadView 就行了呢，就像用缓存一样</li>
+<li>而 RC 级别每次查询都生成一个最新的 ReadView，是不是就可以产生区别了，这算是一个比较常规并且巧妙的设计了</li>
+</ul>
+<p><strong>InnoDB 解决幻读</strong></p>
+<ul>
+<li>在 RR 下，对于快照读，只在开启事务时生成一次 ReadView，从而天然避免了幻读</li>
+<li>而对于当前读，InnoDB 则会对相关的数据自动加 next-key 锁，以避免其他事务修改该数据，只有当前事务提交后，其他数据才能修改相关数据，因此当前事务的前后读取到的相关数据不会变化，从而避免了幻读</li>
+</ul>
+<h1 id="next-key-锁">5. Next-Key 锁</h1>
+<ul>
+<li>Next-Key 锁是行锁和 GAP（间隙锁）的合并，行锁上文已经介绍了，接下来说下 GAP 间隙锁</li>
+<li>行锁可以防止不同事务版本的数据修改提交时造成数据冲突的情况，但如何避免别的事务插入数据就成了问题</li>
+<li>RR 级别中，事务 T1 在批量 update 后加锁，事务 T2 将无法插入新数据，这样事务 T1 在 update 前后读的数据保持一致，避免了幻读，这个锁，就是 Gap 锁</li>
+<li>对于 Gap 锁是这么实现的：
+<ul>
+<li>若 T1 中的 where 条件是个索引，由于 InnoDB 会维护关于该索引的 B+ 树，data 域为主键，当 T1 执行当前读时，则在条件所在的 B+ 树区间加锁，此时将 T2 事务无法插入索引列值若在该区间的数据（区间外的可以插入），直到 T1 提交后 T2 才能插入，这样 T1 的多次当前读都是一致的，从而避免了幻读</li>
+<li>若 T1 中的 where 条件不是索引字段，则会给全表加 gap 锁，此时 T2 将无法插入任何数据，直到 T1 提交事务后 T2 才可以插入，这样 T1 的多次当前读都是一致的，从而避免了幻读</li>
+</ul></li>
+<li>总结：行锁防止别的事务修改或删除，GAP 锁防止别的事务新增，行锁和 GAP 锁结合形成的的 Next-Key 锁共同解决了 RR 级别在写数据时的幻读问题</li>
+</ul>
+<h1 id="范式">6. 范式</h1>
+<ul>
+<li>1 NF : 列不可分割，标准的二维表天然满足，在任何一个关系数据库中，第一范式（1NF）是对关系模式的基本要求，不满足第一范式（1NF）的数据库就不是关系数据库</li>
+<li>2 NF : 非主属性完全依赖于主属性，而不能只依赖关键字的一部分，比如如果以 (id, age) 为主键，其他列就会部分依赖主键，因为其他列完全依赖 id</li>
+<li>3 NF : 属性不依赖于非主属性，即不能有传递依赖，比如 stu_id, class_id, class_name，stu_id 为主键，class_name 依赖于 class_id，对主键出现了传递依赖 stu_id -&gt; class_id -&gt; class_name</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/06/Java/JVM/JVM/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -181,7 +468,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-09-12 23:12:47" itemprop="dateModified" datetime="2020-09-12T23:12:47+08:00">2020-09-12</time>
+                <time title="修改时间：2020-09-17 11:13:06" itemprop="dateModified" datetime="2020-09-17T11:13:06+08:00">2020-09-17</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -290,26 +577,6 @@
 <li>注意，初始化过程之前有个默认值，这点不管对于静态域还是普通域都成立，静态与是在 linking 时设置的默认值，普通域在执行构造方法之前也有一次设置默认值的操作</li>
 <li>面试题： <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="comment">// 打印的 count 是多少？ ---&gt; 3</span></span><br><span class="line">        System.out.println(T.count);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">T</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> count = <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> T t = <span class="keyword">new</span> T();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">T</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        count++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 对比，换了顺序导致值改变</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="comment">// 打印的 count 是多少？ ---&gt; 2</span></span><br><span class="line">        System.out.println(T.count);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">T</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 换下顺序</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> T t = <span class="keyword">new</span> T();</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> count = <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">T</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        count++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 </ul>
-<h3 id="补充为什么单例模式的-dcl-版本为什么要加-volatile">补充：为什么单例模式的 DCL 版本为什么要加 volatile</h3>
-<ul>
-<li>这涉及到指令重排问题，首先我们看下面这个简单的例子 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Main m = <span class="keyword">new</span> Main();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li>上述 main 方法生成的字节码如下： <img src="https://gitee.com/h428/img/raw/master/note/00000151.jpg" alt="miain 方法字节码" /></li>
-<li>我们可以看到，<code>Main m = new Main();</code> 会分成好几部执行：
-<ul>
-<li><code>new</code>：首先创建对象，此时对象为默认值，处于版初始化状态</li>
-<li><code>invokespecial</code>：为对象执行构造方法初始化，只有执行完构造方法后，对象才真正初始化完毕</li>
-<li><code>astore_1</code>：把对象赋值给 m</li>
-</ul></li>
-<li>本身若是指令正常按序执行，不加 volatile 也不会出任何问题，但由于指令可能会重排，即可能先执行 astore_1 再执行 invokespecial，此时对象会处于半初始化状态，只有等到 invokespecial 执行完毕对象才真正初始化完毕</li>
-<li>由于在单利模式中这就导致 INSTANCE 变量会先指向半初始化状态的对象，即变量已经有值指向了一块区域，但这块区域还没完全初始化完成</li>
-<li>在单例模式的 Double Check 中：
-<ul>
-<li>在单例的 synchronize 内部，我们赋值操作针对的是成员变量 INSTANCE</li>
-<li>若首次进入创建实例时恰好发生了指令重排，此时 INSTANCE 就处于半初始化状态，指向一个未完全初始化完毕的对象</li>
-<li>这时，首次初始化还未初始化完成，恰好另一个线程也获取单例，实例内部的域的值已经指向了一个未初始化的对象，则外层 check 不为空，则直接返回了一个未初始化的对象</li>
-</ul></li>
-<li>根据 happens-before 原则，对 volatile 的变量的写操作必定先于后续的读操作完成（通过内存屏障保证），从而达到禁止重排的效果，这样另一个线程要么读到 null 进入内部阻塞锁，要么必然读到完整的初始化完毕的对象，这就是为什么单例的 DCL 实现必须加锁的原因</li>
-</ul>
 <h1 id="java-内存模型">Java 内存模型</h1>
 <h2 id="硬件层的并发优化基础">硬件层的并发优化基础</h2>
 <h3 id="硬件基础">硬件基础</h3>
@@ -370,6 +637,7 @@
 </ul>
 <h2 id="volatile-实现细节">volatile 实现细节</h2>
 <ul>
+<li>volatile 有两个作用：保证线程可见性、禁止指令重排</li>
 <li>现在有一个趋势，就是尽量用 synchronize 而避免采用 volatile，因为 synchronize 在优化后性能已经很高了，volatile 反而很少用，就是面试容易问到</li>
 <li>字节码层面：access_flags 有一个 volatile 标记：ACC_VOLATILE</li>
 <li>JVM 层面：在所有 volatile 变量的读/写操作前后都会加上相关内存屏障 <img src="https://gitee.com/h428/img/raw/master/note/00000157.jpg" alt="volatile 的 jvm 实现" /></li>
@@ -379,9 +647,31 @@
 <li>要观察硬件层级的实现，需要使用 hsdis 观察汇编码，可发现其本质为通过 <code>lock xxx</code>，使得执行 xxx 指令时对内存区域加锁，确保不会出现一致性问题，<a href="https://blog.csdn.net/qq_26222859/article/details/52235930" target="_blank" rel="noopener">参考地址</a></li>
 </ul></li>
 </ul>
+<h3 id="为什么单例模式的-dcl-版本为什么要加-volatile">为什么单例模式的 DCL 版本为什么要加 volatile</h3>
+<ul>
+<li>这涉及到现在 CPU 的指令重排问题，首先我们看下面这个简单的例子 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Main m = <span class="keyword">new</span> Main();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>上述 main 方法生成的字节码如下： <img src="https://gitee.com/h428/img/raw/master/note/00000151.jpg" alt="miain 方法字节码" /></li>
+<li>我们可以看到，<code>Main m = new Main();</code> 会分成好几部执行：
+<ul>
+<li><code>new</code>：首先创建对象，此时对象为默认值，处于版初始化状态</li>
+<li><code>invokespecial</code>：为对象执行构造方法初始化，只有执行完构造方法后，对象才真正初始化完毕</li>
+<li><code>astore_1</code>：把对象赋值给 m</li>
+</ul></li>
+<li>本身若是指令正常按序执行，不加 volatile 也不会出任何问题，但由于指令可能会重排，即可能先执行 astore_1 再执行 invokespecial，此时对象会处于半初始化状态，只有等到 invokespecial 执行完毕对象才真正初始化完毕</li>
+<li>由于在单利模式中这就导致 INSTANCE 变量会先指向半初始化状态的对象，即变量已经有值指向了一块区域，但这块区域还没完全初始化完成</li>
+<li>基于上述指令重排，我们来看单例模式的 DCL 实现： <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> Singleton singleton;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getSingleton</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (singleton == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (Singleton<span class="class">.<span class="keyword">class</span>) </span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (singleton == <span class="keyword">null</span>) &#123; <span class="comment">// double check</span></span><br><span class="line">                    singleton = <span class="keyword">new</span> Singleton(); <span class="comment">// volatile here can avoid instructions rearrangement</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> singleton;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>机遇上述代码，我们看看在单例模式的 Double Check 中，若不加 volatile 会发生什么：
+<ul>
+<li>在单例的 synchronized 内部，我们赋值操作针对的是 static 变量 singleton</li>
+<li>若第一个线程首次进入 synchronized 内部，且还好在执行 <code>singleton = new Singleton();</code> 时发生了指令重排，此时 singleton 就处于半初始化状态，指向一个未完全初始化完毕的对象，即 singleton 虽然指向了对象，但构造方法还未执行，此时该对象内部全为默认值</li>
+<li>恰在此时，另一个线程也获取单例，进入 <code>getSingleton()</code> 后，发现 singleton 已经指向了一个未初始化的对象，则外层 check 不为空，则直接返回了一个未初始化的对象</li>
+<li>因而，单例模式的单例变量必须添加 volatile 关键字，主要是为了避免指令重排（synchronized 不能避免指令重排）</li>
+</ul></li>
+<li>根据 happens-before 原则，对 volatile 的变量的写操作必定先于后续的读操作完成（通过内存屏障保证），从而达到禁止重排的效果，这样另一个线程要么读到 null 进入内部阻塞锁，要么必然读到完整的初始化完毕的对象，这就是为什么单例的 DCL 实现必须加锁的原因</li>
+</ul>
 <h2 id="synchronize-实现细节">synchronize 实现细节</h2>
 <ul>
-<li>字节码层面：monitorenter 和 monitorexit 指令，告诉 jvm 需要加锁</li>
+<li>字节码层面：synchronized 代码块会编译为 monitorenter 和 monitorexit 指令，synchronized 会在方法的 access_flags 打标记，以告诉 jvm 需要加锁</li>
 <li>JVM 层面：C/C++ 调用了操作系统的同步机制</li>
 <li>OS 和硬件层面：通过 <code>lock copxchg 其他指令</code> 对该指令加锁实现，<a href="https://blog.csdn.net/21aspnet/article/details/88571740" target="_blank" rel="noopener">参考地址</a></li>
 </ul>
@@ -423,7 +713,7 @@
 </ul>
 <h4 id="普通对象">普通对象</h4>
 <ul>
-<li>对象头：也叫 markword，8 Byte</li>
+<li>对象头：也叫 Mark Word，8 Byte</li>
 <li>ClassPointer 指针：指向 Class 的指针，-XX:+UseCompressedClassPointers 为 4 字节，不开启为 8 字节</li>
 <li>实例数据：
 <ul>
@@ -435,7 +725,7 @@
 </ul>
 <h4 id="数组对象">数组对象</h4>
 <ul>
-<li>对象头：markword，8 Byte</li>
+<li>对象头：Mark Word，8 Byte</li>
 <li>ClassPointer 指针：同上</li>
 <li>数组长度：视频说是 4 Byte，但经我测试若开启 <code>+XX:+UseCompressedClassPointers</code> 是 4 Byte，若用参数 <code>-XX:+UseCompressedClassPointers</code> 取消了默认的 class pointer 的压缩，则变为 8 Byte，使用 <code>ObjectSizeAgent.sizeOf(new byte[1]) == 32</code> 测试得出的结果</li>
 <li>数组数据：数据类型长度 * 数组长度</li>
@@ -452,20 +742,20 @@
 <li>使用 <code>-XX:-UseCompressedClassPointers</code> 取消 class pointer 压缩后，再次观察结果，我们可以发现取消压缩后，class pointer 和数组长度都变为 8 Byte</li>
 <li>使用 <code>-XX:-UseCompressedOops</code> 取消引用压缩后，再次观察结果</li>
 </ul>
-<h3 id="对象头具体包括什么markword-具体内容">(3) 对象头具体包括什么（markword 具体内容）</h3>
+<h3 id="对象头具体包括什么mark-word-具体内容">(3) 对象头具体包括什么（Mark Word 具体内容）</h3>
 <ul>
-<li>markword 非常复杂，且各版本实现都不一样，下面探讨的是 HotSpot 1.8 的实现</li>
-<li>markword 长度为 64/32 位，主要基于最后的 3 位标记对象处于5 不同的状态：4 锁 + 1 GC</li>
-<li>根据对象所处的不同状态，前面的位有不同的含义，各个状态和对应的位含义如下图所示 <img src="https://gitee.com/h428/img/raw/master/note/00000164.jpg" alt="markword" /></li>
-<li>注意，上图中的 markword 虽为 32 位，但 64 位和其含义一样，多出来的位可能保留未使用或者扩充部分数据使其变得更长，但含义不变，具体对比可参照下图： <img src="https://gitee.com/h428/img/raw/master/note/00000165.jpg" alt="markword2" /></li>
+<li>Mark Word 非常复杂，且各版本实现都不一样，下面探讨的是 HotSpot 1.8 的实现</li>
+<li>Mark Word 长度为 64/32 位，主要基于最后的 3 位标记对象处于5 不同的状态：4 锁 + 1 GC</li>
+<li>根据对象所处的不同状态，前面的位有不同的含义，各个状态和对应的位含义如下图所示 <img src="https://gitee.com/h428/img/raw/master/note/00000164.jpg" alt="Mark Word" /></li>
+<li>注意，上图中的 Mark Word 虽为 32 位，但 64 位和其含义一样，多出来的位可能保留未使用或者扩充部分数据使其变得更长，但含义不变，具体对比可参照下图： <img src="https://gitee.com/h428/img/raw/master/note/00000165.jpg" alt="Mark Word2" /></li>
 <li>CMS promoted object 和 GC 有关，free 呢？ // todo</li>
-<li>详细内容请参考 synchronize 实现原理：新版的 synchronize 有一个锁升级的过程，通过 markword 标记对象的所处的不同锁状态（无锁、偏向、自旋、重量级锁）</li>
+<li>详细内容请参考 synchronize 实现原理：新版的 synchronize 有一个锁升级的过程，通过 Mark Word 标记对象的所处的不同锁状态（无锁、偏向、自旋、重量级锁）</li>
 </ul>
 <p><strong>补充问题：当 Java 处在偏向锁、重量级锁状态时，hashCode 存储在哪</strong></p>
 <ul>
 <li>当一个对象已经计算过 identity hash code，它就无法进入偏向锁状态</li>
 <li>当一个对象当前正处于偏向锁状态，并且需要计算其 identity hash code 的话，则它的偏向锁会被撤销，并且锁会膨胀为重量锁</li>
-<li>重量锁的实现中，ObjectMonitor 类里有字段可以记录下非加锁状态下的 markword，齐总可以存储 identity hash code 的值，或者简单说就是重量级锁可以存下 identity hash code</li>
+<li>重量锁的实现中，ObjectMonitor 类里有字段可以记录下非加锁状态下的 Mark Word，齐总可以存储 identity hash code 的值，或者简单说就是重量级锁可以存下 identity hash code</li>
 <li>synchronize 锁原理：<a href="https://cloud.tencent.com/developer/article/1480590" target="_blank" rel="noopener">参考资料1</a>, <a href="https://cloud.tencent.com/developer/article/1484167" target="_blank" rel="noopener">参考资料2</a>, <a href="https://cloud.tencent.com/developer/article/1485795" target="_blank" rel="noopener">参考资料3</a>, <a href="https://cloud.tencent.com/developer/article/1482500" target="_blank" rel="noopener">参考资料4</a></li>
 </ul>
 <h3 id="对象怎么定位">(4) 对象怎么定位</h3>
@@ -650,10 +940,12 @@
 <li>除此之外的，不仅逻辑分代，而且物理分代，例如 CMS，Parallel Scavenge + Parallel Old 都采用了逻辑分代</li>
 </ul></li>
 <li>逻辑分代对堆内存的划分大致如下： <img src="https://gitee.com/h428/img/raw/master/note/00000180.jpg" alt="堆逻辑分代" /></li>
+<li>在 JDK 1.7 中，除了年轻代和老年代，还有一个永久代 Permanent Generation，其为 Method Area 的实现，但在 1.8 之后，HotSpot 取消了永久代，采用元数据组 MetaSpace 实现 Method Area</li>
+<li>还有一个细节上的区别是，字符串常量池在 1.7 放在永久代中，在 1.8 则放在堆中，MetaSpace 只放 Class 和相关方法等元信息</li>
 <li>年轻代的 GC 称作 MinorGC/YGC，老年代的 GC 称作 MajorGC/FullGC，可使用 <code>-Xmn -Xms/-Xmx</code> 分别设置年轻代大小和堆总大小，在 jdk 1.8 中默认比例为 1:2</li>
 <li>可使用命令 <code>java -XX:+PrintFlagsFinal -version | grep NewRatio</code> 查看年轻代、老年代内存比例，经验证在 1.6, 1.7, 1.8 中都为 1:2 <img src="https://gitee.com/h428/img/raw/master/note/00000143.jpg" alt="分代设置" /></li>
 <li>对于年轻代的回收，主要采用 copying 算法，先在栈上分配，分配不下则试图在 Eden 区分配，当 Eden 区满了触发 MinorGC，将存活的变量拷贝到其中一个 survivor 区，清空 eden 区和另一个 survivor 区，当分代年龄达到设定的阈值时，进入老年代 <img src="https://gitee.com/h428/img/raw/master/note/00000181.jpg" alt="年轻代回收" /></li>
-<li>可以使用参数 <code>-XX:MaxTenuringThreshold</code> 设置年轻代进入老年代的阈值，需要特别注意的是，根据对象的 markword，我们知道分代年龄只有 4 位，因此最大值为 15，这也是大多数回收器的默认值</li>
+<li>可以使用参数 <code>-XX:MaxTenuringThreshold</code> 设置年轻代进入老年代的阈值，需要特别注意的是，根据对象的 Mark Word，我们知道分代年龄只有 4 位，因此最大值为 15，这也是大多数回收器的默认值</li>
 <li>除了阈值外，还有动态年龄的判断能让对象从年轻代进入老年代，若某次 GC 完成后 survivor 区域超过 50% 空间仍存活对象，则会将年龄最大的部分对象放入老年代 <img src="https://gitee.com/h428/img/raw/master/note/00000183.jpg" alt="阈值与动态年龄" /></li>
 <li>分配担保：YGC 期间，survivor 区空间不够用了，空间担保使得新分配的对象直接进入老年代</li>
 <li>此外，为了对标 C/C++ 中的 Stack，JVM 引入了栈，对于满足栈分配条件的对象，会先尝试在栈上分配，否则在线程本地 TLAB 分配（位于 Eden 区，为线程独享，避免分配争用） <img src="https://gitee.com/h428/img/raw/master/note/00000182.jpg" alt="分配" /></li>
@@ -704,7 +996,7 @@
 <ul>
 <li>initial mark：会 STW 但只标记 GC Roots，因此时间很短</li>
 <li>concurrent mark：并发标记，不会 STW，工作线程可以和并发标记同时进行</li>
-<li>remark：再次 STW 来找出冲突部分（已经被标记删除的又取消了），也是整个并发标记算法的难点</li>
+<li>remark：再次 STW 来找出冲突部分（已经被标记删除的又取消了），也是整个并发标记算法的难点（三色标记法）</li>
 <li>concurrent sweep：并发清理</li>
 </ul></li>
 <li>CMS 问题 1：Memory Fragment，即内存碎片化，由于 CMS 针对老年代的回收，采用的是 mark-sweep 算法，因此必定会有内存碎片化的问题</li>
@@ -713,18 +1005,111 @@
 <li>解决方法：降低触发 CMS 的阈值 <code>-XX:CMSInitiatingOccupancyFraction</code></li>
 <li>由于 CMS 的 bug 比较多，因此任何一个 jdk 的默认垃圾回收器都不是 CMS</li>
 <li>虽然 CMS 毛病和 bug 比较多，比如会产生碎片化问题，但其作为并发 GC 的里程碑，处于一个承前启后的地位，它开启了并发回收，理解 CMS 是理解并发回收的关键，因此需要理解好 CMS 才能更好的地理解 G1 和 ZGC</li>
-<li><p>并发回收算法的关键是如何解决冲突问题，这也是后续包括 G1, ZGC 在内的所有并发回收算法的关键</p></li>
-<li>Remark 阶段的算法： <img src="https://gitee.com/h428/img/raw/master/note/00000145.jpg" alt="Remark" /></li>
-<li><p>三色标记 + Incremental Update</p></li>
+<li>并发回收算法的关键是如何解决冲突问题，这也是后续包括 G1, ZGC 在内的所有并发回收算法的关键，对于 remark 阶段的算法，CMS、G1、ZGC 分别采用三色标记 + Incremental Update、三色标记 + SATB、颜色指针实现，三色标记参 <a href="#并发标记算法：三色标记">并发标记算法：三色标记</a></li>
 </ul>
 <h3 id="g1">G1</h3>
 <ul>
-<li><p>G1：STW 在 10 ms 以内，逻辑上分代，物理不分代</p></li>
-<li>G1 回收器逻辑上分代，物理不分带，支持上百 G 内存的回收不卡顿</li>
-<li>ZGC、Shenandoah 支持 4 T 内存的回收不卡顿</li>
-<li>G1 将内存划分为 Region，优先清理垃圾最多的 Region，即 Garbage First，即 G1</li>
+<li>传统的垃圾回收器，例如 PS + PO，都在物理上分代，当内存特别大时，老年代往往也很大，从而导致 FullGC 十分耗时，基于该原因，G1 横空出世</li>
+<li><a href="https://www.oracle.com/technical-resources/articles/javalg1gc.html" target="_blank" rel="noopener">G1</a>：号称 STW 在 10 ms 以内，其在逻辑上分代，物理上不分代，而是一个个 Region</li>
+<li>由于 G1 回收器逻辑上分代，物理不分带的堆内存模型，使得其支持上百 G 内存的回收不卡顿（ZGC、Shenandoah 支持 4 T 内存的回收不卡顿）</li>
+<li>G1 是一种服务端应用使用的垃圾回收器，目标是用在多核、大内存的机器上，它在大多数情况下可以实现指定的 GC 暂停时间，同时还能保持较高的吞吐量，其具有如下特点：
+<ul>
+<li>并发收集</li>
+<li>压缩空闲空间不会延长 GC 的暂停时间</li>
+<li>更易预测的 GC 暂停时间</li>
+<li>适用于不需要实现很高的吞吐量的场景</li>
+</ul></li>
+<li>据研究，G1 的吞吐量比 PS + PO 降低了 15%，但 STW 时间一般只会在 10 - 200 ms</li>
+</ul>
+<h4 id="基本数据结构">基本数据结构</h4>
+<p><strong>Card Table</strong></p>
+<ul>
+<li>在分代模型中，做 YGC 时，对于年轻代的对象，肯定是要扫描一遍的，但对于要查询老年代中的对象也引用了年轻代对象以避免有用的年轻代对象被回收，必须通过扫描老年代得到，这就导致每次 YGC 必须扫描一遍老年代，导致效率十分低下</li>
+<li><strong>为了避免 YGC 时扫描整个老年代</strong>，引入 Card Table 概念，在逻辑上，将老年代划分为一个个 Card，并标记每个 Card 是否引用年轻代对象，是则标记为 Dirty，这样做 YGC 时只需要Dirty 的 Card 即可，因为只有 Dirty 的 Card 引用了年轻代的对象</li>
+<li>因此对于 YGC，并不需要完全地执行根可达，当发现某个对象位于非 Dirty 的 Card 后，该分支就不继续往后扫描了，大大节省了效率</li>
+<li>传统的分代模型都存在该 Card Table，而 G1 的 Region 里面还会进一步划分 Card，对象基于 Card 划分，至少占用一个 Card？（未验证，我是通过 RSet 的 K,V 猜测的，方便自己理解）</li>
+</ul>
+<p><strong>CSet</strong></p>
+<ul>
+<li>CSet 即 Collection Set，存储一组可以被回收的 Region 的集合</li>
+<li>在 CSet 的 Region 中存活的数据会在 GC 过程中被移动到另一个可用的 Region，这是通过 copy 完成的，因此没有内存碎片化问题</li>
+<li>注意 CSet 中的分区可以来自 Eden、Survivor、老年代</li>
+<li>CSet 会占用不到整个堆空间的 1% 大小</li>
+</ul>
+<p><strong>RSet</strong></p>
+<ul>
+<li>RSet 即 Remembered Set，每个 Region 都拥有一个 RSet，记录了其他 Region 中的对象到本 Region 对象的引用（谁指向了我），有点类似 Card Table，但 RSet 更加细化</li>
+<li>首先明确，Region 内部进一步被划分为 Card</li>
+<li>这个 RSet 其实是一个 Hash Table，Key 是别的 Region 的起始地址，Value 是一个集合，里面的元素是 Card Table 的 Index；<a href="https://tech.meituan.com/2016/09/23/g1.html#rset" target="_blank" rel="noopener">参考地址</a></li>
+<li>即对于 Region 的 RSet 的一条记录：记录了哪个其他 Region 的哪几个 Card 引用了当前 Region，我们通过 K-V 即 Region-Card 即可快速定位哪个地方引用了当前 Region</li>
+<li>通过 RSet，在垃圾回收时可以不用扫描整个 Heap，而只需扫描 RSet 即可，这也是 G1 高速回收的关键，也是后续三色标记算法实现的关键</li>
+<li>RSet 缺点：
+<ul>
+<li>浪费空间，每个 Region 需要维护 RSet</li>
+<li>对赋值操作有一定的影响，每次赋值需要更新引用的原有指向对象所在 Region 的 RSet 和新指向对象所在 Region 的 RSet（这在 GC 中称为写屏障，注意这个和内存屏障完全两个概念；<a href="https://blog.csdn.net/luzhensmart/article/details/106052574" target="_blank" rel="noopener">barrier 参考地址，看不太懂</a>）</li>
+</ul></li>
+</ul>
+<h4 id="g1-内存模型">G1 内存模型</h4>
+<ul>
+<li>G1 将内存划分为一个个 Region，Region 在逻辑上可能为 Eden、Suvivor、Old、Humongous，其在 MixedGC 会优先清理垃圾最多的 Old Region，即 Garbage First，即 G1 <img src="https://gitee.com/h428/img/raw/master/note/00000188.jpg" alt="G1 内存模型" /></li>
 <li>需要注意的是，G1 仍然有 FullGC 和 STW，这其实是 GC 算法不可避免的，只能尽量减少 STW 的时间</li>
-<li><p>G1：三色标记+SATB</p></li>
+<li>每个 Region 的大小取值可能为 1M, 2M, 4M, 8M, 16M, 32M，也可以通过参数手动指定：<code>-XX:G1HeapRegionSize</code></li>
+<li>G1 新老年代的比例是弹性的，会根据 GC 时间动态调整，一般不用手工指定，也不建议手工指定，因为这是 G1 预测时间的基准</li>
+<li>若某次 YGC 的 STW 时间较长，超出设定的预期时间，则 G1 动态地将年轻代比例降低一点</li>
+<li>Humongous Object：大对象，超过一个Region 的 50% 则会被当做大对象，若分配内存时检测到超出 Region Size 的一半，则会分配在 Humongous 区域</li>
+</ul>
+<h4 id="回收原理">回收原理</h4>
+<ul>
+<li>YGC：
+<ul>
+<li>当尝试在 Eden 空间分配发现内存不足时，会触发 YGC</li>
+<li>YGC 时大多数时间是多线程并行执行的，类似 Parallel Scavenge</li>
+<li>其中 RSet 可避免 YGC 时扫描所有的 Old Region，而是直接把 RSet 中的对象 copy 到其他 Region 然后重新指向引用</li>
+<li>整个 YGC 期间会 STW，但由于 Eden + Survivor 的比例不会很大，因此不会长时间 STW</li>
+<li>此外，G1 根据本次 STW 时间动态调整年轻代大小，以减少下次 YGC 的 STW 时间</li>
+</ul></li>
+<li>MixedGC：
+<ul>
+<li>当整个 Heap 的已用空间达到一定比例时，则会触发 MixedGC</li>
+<li>MixedGC 的基本流程和 CMS 基本相同，只有清理阶段阶段略有区别，G1 的清理阶段除了年轻代以外，还会对 Old Region 进行筛选，选择垃圾比例最高的 Old Region 回收，这也是 G1 名称的由来；</li>
+<li>还有一个区别就是 G1 清理阶段也是采用的 copying 算法，因此会 STW，但不会有内存碎片；而 CMS 是采用 mark-sweep 的并发清理，不会 STW 但会造成内存碎片问题</li>
+<li>默认比例为 45%，可使用 <code>-XX:InitiatingHeapOccupacyPercent</code> 手动设置</li>
+</ul></li>
+<li>FGC：当整个 Heap 空间不足或者手动调用了 <code>System.gc()</code> 则触发 FGC，即对象分配不下了会产生 FGC</li>
+<li>当对象分配的特别快，GC 线程来不及回收导致内存不足时，会触发 FGC，因此针对 G1 的调优，主要是要达到避免 FGC 的目的，YGC 的区域很小，MixedGC 的第二阶段是并发的，因此他们 STW 时间很短，一般不会造成阻塞</li>
+<li>若 G1 产生了 FGC，如何处理：
+<ul>
+<li>扩内存</li>
+<li>提高 CPU性能：回收的快，业务逻辑产生对象的速度固定，垃圾回收越快，内存空间越大</li>
+<li>降低 MixedGC 触发的阈值，让 MixedGC 提早发生（默认是 45%）</li>
+</ul></li>
+<li>生产环境能随便 dum 吗：小堆影响不大，大堆会造成服务暂停或卡顿（加 live 可以缓解），dump 前会有 FGC</li>
+<li>常见的 OOM 问题有哪些：堆、栈、MethodArea、直接内存</li>
+<li>G1 三色标记 + SATB</li>
+</ul>
+<h3 id="并发标记算法三色标记">并发标记算法：三色标记</h3>
+<ul>
+<li>CMS 与 G1 都采用三色标记算法实现并发标记与再标记，区别在于 CMS 采用 三色标记 + Incremental Update，G1 采用 三色标记 + SATB</li>
+<li>三色标记法，为每个对象标记三种颜色，用于辅助 GC 的标记：
+<ul>
+<li>白色：未被标记的对象</li>
+<li>灰色：自身被标记，成员变量未被标记</li>
+<li>黑色：自身和成员变量均已标记完成</li>
+</ul></li>
+<li>漏标的充分必要条件，两个条件同时满足则发生漏标：在并发标记的过程中，引用关系改变，黑色指向了白色，与此同时，灰色指向白色消失了，则发生漏标</li>
+<li>B 原本指向 D，A 原本不指向 D，但在并发标记过程的同时指针改变，此时由于 A 已经标记为黑色，不再继续往后标记，从而导致 D 被漏标了，此时若不对黑色 A 重新扫描，会把白色 D 对象当做没有新引用从而回收掉 <img src="https://gitee.com/h428/img/raw/master/note/00000189.jpg" alt="漏标" /></li>
+<li>漏标解决方案：打破上述两个条件的其中一个，即破坏其充要条件
+<ul>
+<li>跟踪 A 指向了 D：即 Incremental Update，例如把 A 重新标记为灰色</li>
+<li>跟踪 B 到 D 的删除：SATB，Snapshot at the begining，维护引用的删除，当 B 到 D 的引用消失时，把这个引用推到 GC 堆栈，保证 D 还能被 GC 扫描到</li>
+</ul></li>
+<li>为什么 G1 使用 SATB：
+<ul>
+<li>很显然 SATB 效率更高，采用 Incremental Update 让 A 变为灰色时，将导致重新扫描一遍 A 的成员，若 A 有很多成员，则效率很低</li>
+<li>若灰色 B 指向 D 引用消失时，D 并没有黑色成员指向白色，此时由于引用被 push 到 GC 栈，会导致 D 无法回收（此时 D 应该被回收才对）</li>
+<li>但由于 G1 恰好有 RSet 的存在，对于 GC 栈中的引用，找到引用对象的 Region 并查询 RSet，可快速判定当前对象是否还有 Region 指向它，没有则可以直接回收，不需要扫描整个堆区查找指向白色 D 的引用，因此 SATB 配合 RSet 浑然天成</li>
+</ul></li>
+<li>Remark 阶段的算法： <img src="https://gitee.com/h428/img/raw/master/note/00000145.jpg" alt="Remark" /></li>
 </ul>
 <h3 id="zgc">ZGC</h3>
 <ul>
@@ -741,6 +1126,7 @@
 <li>Epsilon：Debug 用的，不用深究</li>
 </ul>
 <h2 id="如何选择垃圾回收器">如何选择垃圾回收器</h2>
+<h3 id="垃圾回收器对比">垃圾回收器对比</h3>
 <ul>
 <li>Serial Old、Parallel Old 的组合基本已经没人用了，这是早期内存较低时采用的回收器，随着内存变大，该种组合回收效率大大降低，导致卡死现象</li>
 <li>jdk 1.8 默认采用 Parallel Scavenge + Parallel Old 的组合（jdk 1.8 默认使用的 <code>-XX:+UseParallelGC</code> 就是这种组合），大多数人不知道 GC 原理，因此生产环境大多采用的就是该组合的垃圾回收器，调优大多数调优场景主要针对该组合，因为 G1、ZGC 已经优化得很好，调优参数大大减小</li>
@@ -748,7 +1134,7 @@
 <li>对于 1.8 以上的 jdk，推荐采用 G1 垃圾回收器，尤其是分布式场合</li>
 <li>对于分布式锁，一般有一个锁续命问题，但若锁续命时遇上垃圾回收，会导致无法锁续命，因为锁续命是按照时长来的，而若在锁续命过程正好遇到了垃圾回收，尤其是老年代的垃圾回收，会因为超时导致无法续命，锁消失，例如本来 3 秒锁续命一次，但 Parallel Scavenge + Parallel Old 的组合对老年代进行 GC 时，超过 3 秒是很正常的，因此分布式情况下，建议采用 G1</li>
 </ul>
-<p><strong>常见垃圾回收器组合参数设定（1.8）</strong></p>
+<h3 id="常见垃圾回收器组合参数设定1.8">常见垃圾回收器组合参数设定（1.8）</h3>
 <ul>
 <li><code>-XX:+UseSerialGC</code>：表示 Serial New(DefNew) + Serial Old
 <ul>
@@ -801,7 +1187,7 @@
 <li><code>-XX:+PrintGCCause</code>：打印 GC 产生的原因</li>
 <li><code>-XX:+UseConcMarkSweepGC</code>：使用 CMS + ParNew 组合</li>
 </ul>
-<h3 id="测试参数">测试参数</h3>
+<h3 id="测试样例">测试样例</h3>
 <ul>
 <li>我们采用如下的试验小程序： <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 实验用程序，执行时加上 -XX:+PrintCommandLineFlags 以观察 -XX 相关的参数信息以及 GC 信息</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"HelloGc!"</span>);</span><br><span class="line">        List&lt;<span class="keyword">byte</span>[]&gt; list = <span class="keyword">new</span> LinkedList&lt;&gt;();</span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">            <span class="keyword">byte</span>[] b = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>*<span class="number">1024</span>]; <span class="comment">// 每个节点 1 M</span></span><br><span class="line">            list.add(b);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 <li>区分概念：内存泄漏 memory leak 和内存溢出 out of memory</li>
@@ -813,7 +1199,7 @@
 <h2 id="调优思路">调优思路</h2>
 <h3 id="基础概念">基础概念</h3>
 <ul>
-<li>吞吐量：用户代码执行时间 / (用户代码执行时间 + 垃圾回收时间)</li>
+<li>吞吐量：用户代码执行时间 / （用户代码执行时间 + 垃圾回收时间）</li>
 <li>响应时间：STW 越短，响应时间越好</li>
 <li>调优之前，首先确定项目追求啥：吞吐量优先，还是响应时间优先，还是在满足一定响应时间的情况下，需要达到多大的吞吐量，一般分为如下三类：</li>
 <li>例如：
@@ -914,7 +1300,232 @@
 </ul></li>
 <li>如何监控 JVM：使用 jstate, jvisualvm, jprofiler, arthas, top</li>
 </ul>
-<h2 id="调优实战">调优实战</h2>
+<h2 id="调优实战一个例子熟悉工具和命令的使用">调优实战：一个例子熟悉工具和命令的使用</h2>
+<ul>
+<li>下述代码模拟风控场景 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 从数据库中读取信用数据，套用模型，并把结果记录和传输</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> hao</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 数据库实体类</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">CardInfo</span> </span>&#123;</span><br><span class="line">        BigDecimal price = <span class="keyword">new</span> BigDecimal(<span class="number">0.0</span>);</span><br><span class="line">        String name = <span class="string">"张三"</span>;</span><br><span class="line">        <span class="keyword">int</span> age = <span class="number">5</span>;</span><br><span class="line">        Date birthday = <span class="keyword">new</span> Date();</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">m</span><span class="params">()</span> </span>&#123;&#125; <span class="comment">// 模型方法</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 线程池：定时任务，50 个线程，DiscardOldestPolicy 策略</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> ScheduledThreadPoolExecutor executor = <span class="keyword">new</span> ScheduledThreadPoolExecutor(<span class="number">50</span>,</span><br><span class="line">            <span class="keyword">new</span> DiscardOldestPolicy());</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">            modelFit();</span><br><span class="line">            Thread.sleep(<span class="number">100</span>); <span class="comment">// 模拟业务停顿</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">modelFit</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        List&lt;CardInfo&gt; taskList = getAllCatdInfo(); <span class="comment">// 查询数据</span></span><br><span class="line">        taskList.forEach(cardInfo -&gt; &#123;</span><br><span class="line">            executor.scheduleWithFixedDelay(() -&gt; &#123;</span><br><span class="line">                cardInfo.m(); <span class="comment">// 对每个对象执行模型判定，进行风控，不通过不予以贷款</span></span><br><span class="line">            &#125;, <span class="number">2</span>, <span class="number">3</span>, TimeUnit.SECONDS);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 模拟数据库查询：查询所有 CardInfo 信息</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> List&lt;CardInfo&gt; <span class="title">getAllCatdInfo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        List&lt;CardInfo&gt; taskList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">            CardInfo cardInfo = <span class="keyword">new</span> CardInfo();</span><br><span class="line">            taskList.add(cardInfo);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> taskList;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="内置-jdk-分析工具">内置 jdk 分析工具</h3>
+<ul>
+<li><code>jinfo pid</code>：打印指定 Java 进程的虚拟机参数的详细信息</li>
+</ul>
+<h4 id="线程相关如-cpu-高占用死锁等问题">线程相关：如 CPU 高占用、死锁等问题</h4>
+<ul>
+<li>启动项目：<code>java -Xms200M -Xmx200M -XX:+PrintGC Main</code></li>
+<li>一般是运维团队首先收到报警信息，比如 CPU、内存占用率高，此时才开始定位问题</li>
+<li>top 命令：找到内存不断增长，CPU 占用率居高不下的进程 pid</li>
+<li>使用 <code>top -Hp pid</code>：查看该进程的线程信息，找到 CPU 占用率占用率很高的线程</li>
+<li><code>jps</code>：列出当前系统的所有 java 进程</li>
+<li><code>jstack pid</code>：
+<ul>
+<li>列出指定 java 进程下的所有线程的详细信息以及运行状态等</li>
+<li>需要注意的是其给出的线程 nid 是 16 进制的</li>
+<li>若 cpu 占用率很高，但是很多 thread 却都处于 waiting 状态，则程序大概率存在问题</li>
+<li>重点关注 waiting blocked 等线程状态信息</li>
+<li>处于 waiting 时，要特别关注 waiting on，线程在等待什么导致被阻塞了</li>
+<li>加入一个进程中有 100 个线程，很多线程都在 waiting on xxx，一定要找到是哪个线程持有这把锁：搜索 jstack 信息，找到 xxx，看看哪个线程持有该锁</li>
+</ul></li>
+<li>作业：
+<ul>
+<li>写一个死锁程序，使用 jstack 观察</li>
+<li>写一个程序，一个线程持有锁不释放，其他线程等待</li>
+</ul></li>
+<li>为什么阿狸规范里规定，线程的名称（尤其是线程池）都要写有意义的名称？怎样自定义线程池里的线程名</li>
+</ul>
+<h4 id="内存相关如-oom-问题">内存相关：如 OOM 问题</h4>
+<ul>
+<li>同样显示运维通知、top 定位内存相关进程 id</li>
+<li><code>jstat -gc pid</code>：打印 gc 信息，用于动态观察 gc 情况，阅读 GC 日志发现频繁 GC 则说明发生内存问题，需要进一步定位调优</li>
+<li><code>jstat -gc pid 500</code>：每 500 ms 打印 GC 情况</li>
+<li>可以使用 jconsole 远程连接并监控 jvm，但依赖于 jmx 协议，服务器启动的同时必须指定 jmx 相关参数和端口，大致内容如下：
+<ul>
+<li><code>java -Djava.rmi.server.hostname=192.168.25.41 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=11111 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -XX:+PrintGC -Xms200M -Xmx200M Main</code> <img src="https://gitee.com/h428/img/raw/master/note/00000187.jpg" alt="jconsole" /></li>
+</ul></li>
+<li>上述配置的协议，也可以使用 jvisualvm 进行连接，且 jvisualvm 比 jconsole 界面更加好看一点；jprofiler 号称最好用的图形化监控，但收费</li>
+<li>很显然，使用图形界面很容易观察出 OOM 问题，但若是面试问起，不能这么回答：因为图形界面基于 JMX，而 JMX 会将进程 attach 到 JMX 从而会影响原进程的执行效率，因此生产环境要避免使用
+<ul>
+<li>已经上线不能用图形界面，该用什么呢？：命令行工具，arthas 等在线分析工具</li>
+<li>图形界面到底用在什么地方？测试！测试的时候进行监控（压测）</li>
+</ul></li>
+<li>对于内存问题，一般我们找出是什么类的对象最多，一般就能找到出问题的地方，因此我们可以用 <code>jmap -histo pid | head -20</code> 查看最多数量对象的 20 个，这个命令相当于是在线分析的一种，对系统影响相对较小，可以使用</li>
+<li>jmap 也可以手动导出堆转储文件，但生产环境要避免使用：
+<ul>
+<li><code>jmap -dump:format=b,file=out.dat pid</code>：将指定进程的堆内存信息以二进制形式导出到 out.dat 文件</li>
+<li><code>jhat -J-mx512M out.dat</code>：导出的文件下载后，可以在其他机器使用 jhat 分析，还支持 OQL 查询，还可以使用 jvisualvm 图形工具分析</li>
+<li>虽然离线分析很强大，但实际上 dump 会导致系统卡顿，尤其对于大内存的系统，在 dump 堆转储文件期间会对进程产生很大影响，导致卡顿，因为其需要把整个堆内存信息存储为文件（电商不适合）</li>
+<li>启动 java 程序时若设定了参数 <code>-XX:+HeapDumpOnOutOfMemoryError</code> 后，会在 OOM 时自动产生堆转储文件，但同样的对于大内存的 dump 可能造成卡顿，因此实际项目也很少这么干</li>
+<li>有一个 trick，若 java 进程因为 OOM 挂了，且没有设置 <code>-XX:+HeapDumpOnOutOfMemoryError</code> 参数，但进程挂了后别急着重启，仍然可以使用 jmap 把 Heap 情况 dump 出来？视频提到，不知怎么做</li>
+<li>若服务器做了高可用，停掉这台服务器对其他服务器不影响，且无其他可用的分析办法时，可尝试考虑使用 dump</li>
+<li>还可以根据业务情况具体分析，若机子内存不那么大，可以挑一个半夜没人的时候或者隔离出机子然后进行 dump</li>
+<li>使用 MAT/jhat 进行 dump 文件分析：<a href="https://www.cnblogs.com/baihuitestsoftware/articles/6406271.html" target="_blank" rel="noopener">参考地址</a></li>
+</ul></li>
+<li>推荐的分析方法：在线定位，使用 arthas 用于在线排查，但实际上，一般小点的公司用不到</li>
+<li>实际上，找到有问题的代码，是最难的地方</li>
+</ul>
+<h3 id="arthas-在线排查工具">arthas 在线排查工具</h3>
+<ul>
+<li>为什么需要在线排查？
+<ul>
+<li>在生产环境我们经常会碰到一些不好排查的问题，例如线程安全问题，使用最简单的 threaddump 或者 heapdump 不好查到问题原因</li>
+<li>为了排查这些问题，我们会临时添加一些日志，比如在一些关键的函数里打印入参，然后重新打包发布</li>
+<li>如果打了日志还是没找到问题，继续加日志，重新打包发布</li>
+<li>对于上线流程复杂而且审核比较严的公司，从改代码到上线需要层层的流转，会大大影响问题排查的进度</li>
+</ul></li>
+<li>arthas：下载和安装请参考官方 github</li>
+<li>首先，运行前面的例子，为了避免很快 FullGC，堆内存设置稍大点：<code>java -Xms20M -Xmx20M -XX:+PrintGC Main</code></li>
+<li>启动 arthas：<code>java -jar arthas-boot.jar</code>，然后选择正在运行的 java 程序，arthas 会 attach 该程序，在进入 arthas 界面后，则可以直接执行 arthas 相关命令</li>
+<li>help：查看 arthas 常用指令</li>
+<li>jvm：观察 jvm 信息，有点类似 jinfo 指令</li>
+<li>thread：查看线程信息，定位线程问题</li>
+<li>dashboard：观察系统情况</li>
+<li>jad：反编译，对可能的类即使反编译，十分强大
+<ul>
+<li>动态代理生成的类定位问题</li>
+<li>第三方的类（观察代码）</li>
+<li>版本问题：确定自己最新提交的版本是不是被使用</li>
+</ul></li>
+<li>redefine：热替换，可用于改小 Bug，目前有些限制条件
+<ul>
+<li>可以不用停止进程而直接替换源码</li>
+<li>只能该方法实现，方法已经运行完成</li>
+<li>不能改方法名，不能改属性</li>
+</ul></li>
+<li>sc：search class</li>
+<li>watch：watch method</li>
+<li>heapdump：<code>heapdump /root/out-20200907.dat</code> 导出堆转储文件，相当于 <code>jmap -dump:...</code>，但对主进程影响很大，一般不用</li>
+<li>没有包含的功能：<code>jmap -histo pid | head -20</code>，要使用该功能仍需使用 jmap</li>
+</ul>
+<p><strong>热替换测试</strong></p>
+<ul>
+<li>有主类 Main 和调用类 TT，main 会每次读取一次输入创建一个 TT 对象并调用一次 m 方法 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">            System.in.read();</span><br><span class="line">            <span class="keyword">new</span> TT().m();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TT</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">m</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>首先执行 <code>java Main</code> 启动主类，其会调用 TT，输入一次打印一个 1</li>
+<li>我们假设此时 TT 程序出错，我们希望其打印 2</li>
+<li>我们启动 arthas 并进入对应进程，执行反编译：<code>jad TT</code> 可以看到反编译后的代码</li>
+<li>直接找到 TT 的源码位置，修改 1 为 2，并编译 <code>javac TT.java</code></li>
+<li>然后进入 arthas，执行 <code>redefine /root/rr/TT.class</code> 进行热替换，成功后会提示 <code>redefine success, size: 1, classes:TT</code></li>
+<li>回到 Main 的主界面，继续输入，验证输出是否变为 2</li>
+</ul>
+<h1 id="调优案例">调优案例</h1>
+<ul>
+<li>OOM 产生的原因多种多样，有些程序未必产生 OOM，但仍然会不断 FGC，导致 CPU 飙高，但内存回收特别少，例如前面的测试小程序</li>
+<li>1、硬件升级反而卡顿的问题（见上）</li>
+<li>2、线程池不当运用产生 OOM 问题（见上）
+<ul>
+<li>或者不断往 List 里加对象导致 OOM（实在太 low 了，不太现实）</li>
+</ul></li>
+<li>3、smile jira 问题
+<ul>
+<li>系统频繁 FullGC，并且找不到原因</li>
+<li>解决：最开始一直重启，后来扩内存，并将垃圾回收器换成 G1，成功解决</li>
+</ul></li>
+<li>4、tomcat http-header-size 设置过大
+<ul>
+<li><code>server.max-http-header-size=10000000</code></li>
+<li>导致每个 http 连接来时，占用大量内存，因为头太大了，这样单个 http 连接就占用很多的内存，连接一多，则快速占满内存，导致频繁 Full GC</li>
+<li><code>java -Xms256m -Xmx256m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=E:/logs/tmp.hprof -Xloggc:E:/logs/gc.log BootApplication</code></li>
+<li>使用 jmeter 模拟并发测试发现会 OOM</li>
+<li>通过分析 dump 发现内存占比最高的类型为 byte[] 字节数组，每个字节数组有 10 M，共有 10 个这样的数组</li>
+<li>进一步分析，发现有 Http11InputBuffer 引用它，根据猜测是 Http 请求缓存过大了，但显然我们是简单请求，无请求体，因而进一步猜测请求头过大，但我们并没有发送请求头，因此可能是设置问题（其实真正要定位到问题是很难的）</li>
+</ul></li>
+<li>5、Lambda 表达式导致方法区溢出问题（MetaSpace/PermGen），或者过多的动态代理字节码技术也可能导致该问题</li>
+<li>6、直接内存溢出问题：少见
+<ul>
+<li>深入理解 Java 虚拟机，第 59 页，使用 Unsafe 分配直接内存</li>
+<li>或者使用 NIO 导致的问题</li>
+</ul></li>
+<li>7、栈溢出问题：-Xss 设定太小</li>
+<li>8、比较一下两段程序的异同，分析一下哪个是更优写法： <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 显然第一个写法</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Object o;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">            o = <span class="keyword">new</span> Object();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 每次循环都产生个 o 指向堆，若方法不结束，不会被回收</span></span><br><span class="line">        <span class="comment">// 经测试，查看字节码，jvm 好像做了优化</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">            Object o = <span class="keyword">new</span> Object();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>9、C++ 程序员重写 finalize 引发频繁 GC
+<ul>
+<li>小米云，HBase 同步系统，系统通过 nginx 访问超时报警</li>
+<li>查询日志，发现频繁 GC</li>
+<li>最后排查，发现是 C++ 程序员重写 finalize 引发频繁 GC 问题</li>
+<li>为什么 C++ 程序员会重写 finalize：因为 C++ 有析构函数，C++ 程序员对 Java GC 不了解，以为需要自己手动释放内存</li>
+<li>为什么重写 finalize 导致频繁 GC：因为重写的 finalize 耗时比较长（200 ms），每个对象被回首时都会回调该方法，调用不过来从而导致 GC 不过来，从而引发频繁 GC</li>
+</ul></li>
+<li>10、如果有一个系统，内存消耗一直不超过 10%，但是观察 GC 日志，却发现 FGC 总是频繁产生，会是什么引起的？ 有人显式调用了 System.gc()</li>
+<li>11、Distuptor 有个可以设置链的长度，如果过大，然后对象大，消费完不主动释放，会导致溢出（需要后续学习）</li>
+<li>12、用 jvm 都会溢出，mycat 用崩过，1.6.5 某个临时版本解析 sql 子查询算法有问题，9 个 exists 的联合 sql 就导致生成几百万的对象</li>
+<li>13、new 大量线程，会产生 native thread OOM
+<ul>
+<li>（太 low 了）：应该用线程池</li>
+<li>解决方案：减少堆内存，太 Low 了，预留更多内存产生 native method</li>
+<li>JVM 内存占物理内存比例 50% - 80%</li>
+</ul></li>
+</ul>
+<h1 id="jvm-常用参数">JVM 常用参数</h1>
+<h2 id="gc-常用参数">GC 常用参数</h2>
+<ul>
+<li>-Xmn -Xms -Xmx -XsS</li>
+<li>-XX:+UseTLAB</li>
+<li>-XX:+PrintTLAB</li>
+<li>-XX:TLABSize</li>
+<li>-XX:+ResizeTLAB</li>
+<li>-XX:+DisableExplictGC：设置该参数后，<code>System.gc()</code> 的显式调用不生效</li>
+<li>-XX:+PrintGC</li>
+<li>-XX:+PrintGCDetails</li>
+<li>-XX:+PrintHeapAtGC</li>
+<li>-XX:+PrintGCTimeStamps</li>
+<li>-XX:+PrintGCApplicationConcurrentTime</li>
+<li>-XX:+PrintGCApplicationStoppedTime</li>
+<li>-XX:+PrintReferenceGC</li>
+<li>-verbose:class</li>
+<li>-XX:+PrintVMOptions</li>
+<li>-XX:+PrintFlagsFinal</li>
+<li>-Xloggc:/opt/log/gc.log</li>
+<li>-XX:PerBlockSpin, -XX:CompileThreshold：锁自旋次数、的代代码检测参数、逃逸分析、标量替换等这些不建议设置</li>
+</ul>
+<h2 id="parallel-常用参数">Parallel 常用参数</h2>
+<ul>
+<li>-XX:+UseSerialGC</li>
+<li>-XX:SurvivorRatio</li>
+<li>-XX:PreTenureSizeThreshold</li>
+<li>-XX:MaxTenuringThreshold</li>
+<li>-XX:+ParallelGCThreads</li>
+<li>-XX:MaxGCPauseMillis</li>
+<li>-XX:+UseAdaptiveSizePolicy</li>
+</ul>
+<h2 id="cms-常用参数较麻烦">CMS 常用参数（较麻烦）</h2>
+<ul>
+<li>-XX:+UseConcMarkSweepGC</li>
+<li>-XX:ParallelCMSThreads</li>
+<li>-XX:CMSInitiatingOccupancyFraction</li>
+<li>-XX:+UseCMSCompactAtFullCollection</li>
+<li>-XX:CMSFullGCsBeforeCompaction</li>
+<li>-XX:+CMSClassUnloadingEnabled</li>
+<li>-XX:CMSInitiatingPermOccupancyFraction</li>
+<li>-XX:UseCMSInitiatingOccupancyOnly</li>
+<li>GCTimeRatio</li>
+</ul>
+<h2 id="g1-常用参数">G1 常用参数</h2>
+<ul>
+<li>-XX:+UseG1GC</li>
+<li>-XX:MaxGCPauseMillis</li>
+<li>-XX:GCPauseIntervalMillis</li>
+<li>-XX:+G1HeapRegionSize</li>
+<li>G1 ReservePercent</li>
+<li>G1 NewSizePercent</li>
+<li>G1 MaxNewSizePercent</li>
+<li>GCTimeRatio</li>
+</ul>
+<h2 id="zgc-常用参数">ZGC 常用参数</h2>
+<ul>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+</ul>
 
       
     </div>
@@ -3402,7 +4013,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-09-12 23:12:47" itemprop="dateModified" datetime="2020-09-12T23:12:47+08:00">2020-09-12</time>
+                <time title="修改时间：2020-09-17 11:11:14" itemprop="dateModified" datetime="2020-09-17T11:11:14+08:00">2020-09-17</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -3537,7 +4148,7 @@
 </ul>
 <p><strong>传播时延对载波监听的影响</strong></p>
 <ul>
-<li>争用期：发生碰撞所需要的最迟时间，即 <span class="math display">\[2 \tau\]</span></li>
+<li>争用期：发生碰撞所需要的最迟时间，即 <span class="math inline">\(2 \tau\)</span></li>
 <li>10 Mbps 的以太网标准规定连接的最大长度为 2500 m，对应的争用期为 51.2μs，则在争用期内 10 Mbps 的以太网可发送 64 字节数据，因此我们发送帧至少要大于 64 字节，否则协议无法检测出是否发生碰撞</li>
 <li>对于 100 Mbps 以太网，由于速度增大，如果要保证发送帧的最短有效帧仍然为 64 秒，则我们需要将争用期变为原来的十分之一 5.12μs，因此百兆以太网允许最大连接长度要为 250 m，其争用期为 5.12μs，在争用期内最多发送 64 字节数据，因此仍然符合最短有效帧的定义</li>
 <li>由此可见，以太网的速率越快，以太网的有效距离就越短，对于 1000 Mbps 的以太网，要么放弃 CSMA/CD 协议改用其他协议，若仍要使用该协议，为了在争用期内检测出碰撞，就要再一次减小最大有效传输距离变为 25 m；若不想减小距离，则只能考虑将最短有效帧变为原来百兆以太网的 10 倍</li>
@@ -3754,12 +4365,8 @@
 <li>一开始客户端和服务端都是关闭状态，但是在某个时刻，客户端需要和服务端进行通信，此时双方都会各自准备好端口，服务器段的端口会处于监听状态，等待客户端的连接</li>
 <li>首先，客户端要知道自身的端口号，和目的进程的端口号，这样才能发起请求，且服务端要处于监听状态（LISTEN），才能握手</li>
 <li>第一次握手：客户端想与服务器进行连接了，所以状态变为主动打开，同时发送一个连接请求报文给服务器段 SYN=1，并且会携带 x 个字节过去；发送完请求连接报文后，客户端的状态就变为了 SYN_SENT，可以说这个状态是等待发送确认(为了发送第三次握手时的确认包)</li>
-<li>第二次握手：服务端接收到连接请求报文后，从 LISTTEN 状态变为被动打开状态，然后给客户端返回一个报文；这个报文有两层意思，一是确认报文，而可以达到告诉客户端，我也打开连接了；发完后，变为SYN_RCVD 状态(也可以说是等待接受确认状态，接受客户端发过来的确认包)</li>
+<li>第二次握手：服务端接收到连接请求报文后，从 LSTTEN 状态变为被动打开状态，然后给客户端返回一个报文；这个报文有两层意思，一是确认报文，而可以达到告诉客户端，我也打开连接了；发完后，变为SYN_RCVD 状态(也可以说是等待接受确认状态，接受客户端发过来的确认包)</li>
 <li>第三次握手：客户端得到服务器端的确认和知道服务器端也已经准备好了连接后，还会发一个确认报文到服务器端，告诉服务器端，我接到了你发送的报文，接下来就让我们两个进行连接了。客户端发送完确认报文后，进入 ESTABLISHED，而服务器接到了，也变为 ESTABLISHED</li>
-</ul>
-<p><strong>为什么是三次握手</strong></p>
-<ul>
-<li><a href="https://blog.csdn.net/to_be_better/article/details/54885684" target="_blank" rel="noopener">参考回答</a></li>
 </ul>
 <h3 id="同时打开连接请求">4.3.4 同时打开连接请求</h3>
 <ul>
@@ -3782,7 +4389,7 @@
 <li>通过上述确认和超时重传机制，就可以在不可靠的网络上实现可靠性传输</li>
 <li>停止等待 ARQ 协议的优点是简答，但也有很严重的缺点，就是信道利用率太低</li>
 </ul>
-<p><strong>连续 ARQ 协议</strong></p>
+<p><strong>连续 ARQ 协议 + 累积确认</strong></p>
 <ul>
 <li>由于停止等待 ARQ 协议信道利用率太低，所以需要使用连续 ARQ 协议来进行改善，这个协议会连续发送一组数据包，然后再等待这些数据包的 ACK</li>
 <li>连续 ARQ 协议以字节为单位进行传输，即会对数据以字节为大小按序编号，但我们在描述时使用术语<code>分组</code>（停止等待 ARQ 协议可能是多个字节的分组为单位）</li>
@@ -3821,8 +4428,9 @@
 <li>当发送方收到了一个窗口为 0 的确认报文后，发送者便停止发送，等待接收者的后续确认报文以整窗口大小</li>
 <li>但是如果这个窗口不为 0 的后续确认报文在传输过程丢失，会导致发送方一直等待下去，而接收方以为发送方已经收到该应答，等待接收新数据，这样双方就相互等待，从而产生死锁</li>
 <li>为了避免流量控制引发的死锁，TCP 引入<strong>持续计时器</strong></li>
-<li>若发送方收到对方的零窗口通知，就启动持续计时器，若持续计时器设置的时间到期，就发送一个零窗口探测报文段（仅携带1字节的数据）- 若接收方仍然返回零窗口，则重置该计时器继续等待</li>
-<li>若窗口不为0，则表示应答报文丢失了，此时重置发送窗口后开始发送，这样就避免了死锁的产生</li>
+<li>若发送方收到对方的零窗口通知，就启动持续计时器，若持续计时器设置的时间到期，就发送一个零窗口探测报文段（仅携带1字节的数据）</li>
+<li>若接收方仍然返回零窗口，则重置该计时器继续等待</li>
+<li>若窗口不为 0，则表示应答报文丢失了，此时重置发送窗口后开始发送，这样就避免了死锁的产生</li>
 </ul>
 <h3 id="拥塞控制">4.3.7 拥塞控制</h3>
 <ul>
@@ -3890,18 +4498,35 @@
 <li>在等待 2MSL 时间后进入到 CLOSED 状态，最终释放整个 TCP 传输连接</li>
 <li>上述过程大致如图所示 <img src="https://gitee.com/h428/img/raw/master/note/00000021.jpg" alt="同时释放连接" /></li>
 </ul>
-<h3 id="补充">4.3.10 补充</h3>
-<p><strong>关闭连接时等待 2 MSL 的原因</strong></p>
+<h3 id="补充面试题">4.3.10 补充面试题</h3>
+<h4 id="关闭连接时等待-2-msl-的原因">4.3.10.1 关闭连接时等待 2 MSL 的原因</h4>
 <ul>
 <li>TIME_WAIT 状态就是用来重发可能丢失的刚发出去的 ACK 报文：在 Client 发送出最后的 ACK ，但该 ACK 可能丢失，Server 如果没有收到 ACK，将不断重复发送 FIN 片段以再次关闭</li>
 <li>2MSL 是两倍的 MSL(Maximum Segment Lifetime)，MSL 指一个片段在网络中最大的存活时间，2MSL 就是一个发送和一个回复所需的最大时间，如果直到 2MSL，Client都没有再次收到 FIN，推断服务端收到信息，结束 TCP</li>
 </ul>
-<p><strong>为什么连接的时候是三次握手，关闭的时候却是四次挥手</strong></p>
+<h4 id="为什么连接的时候是三次握手关闭的时候却是四次挥手">4.3.10.2 为什么连接的时候是三次握手，关闭的时候却是四次挥手</h4>
 <ul>
-<li>因为当 Server 端收到 Client 端的 SYN 连接请求报文后，可以直接发送 SYN+ACK 报文。其中 ACK 报文是用来应答的，SYN 报文是用来同步的</li>
-<li>但是关闭连接时，当 Server 端收到 FIN 报文时，很可能并不会立即关闭 SOCKET，所以只能先回复一个 ACK 报文，告诉 Client 端，&quot;你发的 FIN 报文我收到了&quot;；只有等到我 Server 端所有的报文都发送完了，我才能发送 FIN 报文，因此不能一起发送，故需要四步握手</li>
+<li>这是由计网中著名的“两军问题”引出的，由于 IP 信道的不可靠，从理论上讲无论进行多少次握手都不能保证上层信道的百分百可靠性，即不存在蓝军必胜的通信协议，因为必定会有最后一条信息得不到确认</li>
+<li>而在实际中，一般约定双方各自发送一次确认并收到一次确认则认为信道可靠，可以建立</li>
+<li>在建立连接时，只需三次握手就可以完成 client 和 server 各自发送和收到一次确认
+<ul>
+<li>第一次握手：client 发送确认 SYN</li>
+<li>第二次握手：server 给出对 client 的确认，并同时发送自己的确认 SYN</li>
+<li>第三次握手：client 给出对 server 的确认，client 建立连接成功</li>
+<li>server 收到第三次握手包，server 建立连接成功</li>
+</ul></li>
+<li>而在释放连接时，由于 server 在给出对 client 的确认后，可能还需要继续传输数据，因此并不能同时给出自己的确认 SYN，因此需要四次挥手才能完成各自发送和接受一次确认
+<ul>
+<li>第一次挥手：client 发送 FIN</li>
+<li>第二次挥手：server 收到 client 的 FIN，并给出确认</li>
+<li>server 可能还需要单向传输数据，因此不能同时给出自己的 FIN</li>
+<li>第三次挥手：server 发送 FIN</li>
+<li>第四次挥手：client 收到 server 发送的 FIN，并给出确认</li>
+<li>server 收到确认后，关闭</li>
+<li>client 等待 TIME_WAIT 时间后没有收到重发请求，则表示服务器已关闭，则释放自己的连接</li>
+</ul></li>
 </ul>
-<p><strong>TCP 的 4 个定时器</strong></p>
+<h4 id="tcp-的-4-个定时器">4.3.10.3 TCP 的 4 个定时器</h4>
 <ul>
 <li>超时重传定时器：对报文段的等待确认时间（连续 ARQ 协议）</li>
 <li>持续定时器：用于解决流量控制时的死锁问题</li>
@@ -3921,16 +4546,35 @@
 <ul>
 <li>Domain Name System 域名系统，也叫作域名解析协议，其作用是将域名解析成对应的 IP 地址</li>
 </ul>
-<p><strong>工作流程</strong></p>
+<p><strong>DNS 服务器类型</strong></p>
 <ul>
-<li>通过域名访问网页</li>
-<li>计算机会先将域名发送到一个解析域名的服务器上，该服务器有如下解析过程：
+<li>根域名服务器 : 顶级的 DNS 服务器，一般保存了各个顶级域 DNS 的地址</li>
+<li>顶级域服务器 : 专门解析某地区或某类型的域名服务器，例如 .com, .cn, .net 等</li>
+<li>二级域服务器 : 二级域的服务器一般是你购买域名的公司提供的 DNS 负责解析，例如腾讯云、阿里云、Amazon 等</li>
+<li>子域 : 一般有域名对应主机的程序负责解析，如 nginx 负责转发等</li>
+<li>本地 DNS : 该 DNS 为你在 TCP/IP 中配置的 DNS，一般为 ISP 运行商提供的 DNS，其内部一般缓存了常见的域名和 IP 的映射表，对于这些域名可以不必向上查询</li>
+</ul>
+<p><strong>DNS 服务的工作流程</strong></p>
 <ul>
-<li>在其服务器上游很多服务器，能解析各种各样的域名，比如有专门解析 org、com、net 等，最重要的还有一个根域名服务器</li>
-<li>域名解析(在服务器上查找 IP 地址)的过程有两种算法，迭代查询，递归查询，一般是两种查询的结合</li>
-<li>本机计算机找到其中一台解析域名的服务器(可能是.com)，如果没有找到对应的 IP 地址，那么就会去找根域名服务器，根域名服务器知道所有的子服务器，所以他肯定知道该域名所对应的 IP 地址在那个子服务器中，所以告诉第一次查询的服务器要他去另一台服务器上找，找到了，就将其返回给计算机，以后在有另一台计算机也通过这个域名访问，那么第一台服务器会有原来的域名IP地址的缓存，就不用去找根服务器了</li>
+<li>在浏览器输入域名，操作系统会先检查本地 hosts 文件是否缓存了对应的映射关系，如果有，直接返回 IP 地址，域名解析结束</li>
+<li>若没有则进查询本地 DNS 解析器缓存（本机解析过的都会被缓存下来），若有则直接返回，完成解析</li>
+<li>若没有，则会查找 TCP/IP 中配置的 DNS 服务器，该服务器一般为 ISP 运营商或者云主机运营商提供的 DNS 服务器，后文称之为本地 DNS，本地 DNS 往往包含大量常用网址的缓存，若存在域名，则直接返回，域名解析结束</li>
+<li>若不存在，则本地 DNS 服务器根据是否采用转发模式，会有不同的查询流程</li>
+<li>若不采用转发模式，则走域名的动态解析流程：
+<ul>
+<li>则本地 DNS 会把请求转发 13 台 DNS 根服务器</li>
+<li>13 台 DNS 根服务器根据域名后缀判断是谁授权管理，并返回一个对应的二级域服务器 IP，例如 .con, .net 等</li>
+<li>本地 DNS 接收到二级域服务器 IP 后，则请求该顶级域名服务器，若该服务器无法解析该域名，则会返回多个下一级域名服务器，一般为域名厂商的提供 DNS</li>
+<li>本地 DNS 请求其中一个云服务器厂商 DNS，可能一直往下迭代重复上述操作，直到 DNS 找到找到用户配置的 IP 地址</li>
+<li>本地 DNS 得到 IP 地址后，将 IP 地址返回给 PC，解析完成</li>
 </ul></li>
-<li>找到了，就能找到我们要访问的服务器了 <img src="https://gitee.com/h428/img/raw/master/note/00000022.jpg" alt="DNS解析" /></li>
+<li>若采用转发模式：
+<ul>
+<li>则本地 DNS 会将请求转发至上一级服务器，由上一级服务器进行解析，</li>
+<li>若上一级服务器不能解析，再次根据转发设置将请求转发至根或者更上一级</li>
+</ul></li>
+<li>不管是本地 DNS 服务器用是是转发，还是根提示，最后都是把结果返回给本地 DNS 服务器，由此 DNS 服务器再返回给客户机</li>
+<li>不采用转发模式，走域名动态解析的流程大致如下图所示 <img src="https://gitee.com/h428/img/raw/master/note/00000022.jpg" alt="DNS 动态解析" /></li>
 </ul>
 <h2 id="http-协议">5.3 HTTP 协议</h2>
 <ul>
@@ -4132,7 +4776,7 @@
 <li>3xx：重定向--要完成请求必须进行更进一步的操作</li>
 <li>4xx：客户端错误--请求有语法错误或请求无法实现</li>
 <li>5xx：服务器端错误--服务器未能实现合法的请求</li>
-<li>常见的状态码如下 : <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">200 OK                        &#x2F;&#x2F;客户端请求成功</span><br><span class="line">400 Bad Request               &#x2F;&#x2F;客户端请求有语法错误，不能被服务器所理解</span><br><span class="line">401 Unauthorized              &#x2F;&#x2F;请求未经授权，这个状态代码必须和WWW-Authenticate报头域一起使用 </span><br><span class="line">403 Forbidden                 &#x2F;&#x2F;服务器收到请求，但是拒绝提供服务</span><br><span class="line">404 Not Found                 &#x2F;&#x2F;请求资源不存在，eg：输入了错误的URL</span><br><span class="line">500 Internal Server Error     &#x2F;&#x2F;服务器发生不可预期的错误</span><br><span class="line">503 Server Unavailable        &#x2F;&#x2F;服务器当前不能处理客户端的请求，一段时间后可能恢复正常</span><br></pre></td></tr></table></figure></li>
+<li>常见的状态码如下 : <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">200</span> OK                        <span class="comment">//客户端请求成功</span></span><br><span class="line"><span class="number">400</span> Bad Request               <span class="comment">//客户端请求有语法错误，不能被服务器所理解</span></span><br><span class="line"><span class="number">401</span> Unauthorized              <span class="comment">//请求未经授权，这个状态代码必须和WWW-Authenticate报头域一起使用 </span></span><br><span class="line"><span class="number">403</span> Forbidden                 <span class="comment">//服务器收到请求，但是拒绝提供服务</span></span><br><span class="line"><span class="number">404</span> Not Found                 <span class="comment">//请求资源不存在，eg：输入了错误的URL</span></span><br><span class="line"><span class="number">500</span> Internal Server <span class="built_in">Error</span>     <span class="comment">//服务器发生不可预期的错误</span></span><br><span class="line"><span class="number">503</span> Server Unavailable        <span class="comment">//服务器当前不能处理客户端的请求，一段时间后可能恢复正常</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> codeMessage = &#123;</span><br><span class="line">  <span class="number">200</span>: <span class="string">'服务器成功返回请求的数据。'</span>,</span><br><span class="line">  <span class="number">201</span>: <span class="string">'新建或修改数据成功。'</span>,</span><br><span class="line">  <span class="number">202</span>: <span class="string">'一个请求已经进入后台排队（异步任务）。'</span>,</span><br><span class="line">  <span class="number">204</span>: <span class="string">'删除数据成功。'</span>,</span><br><span class="line">  <span class="number">400</span>: <span class="string">'发出的请求有错误，服务器没有进行新建或修改数据的操作。'</span>,</span><br><span class="line">  <span class="number">401</span>: <span class="string">'用户没有权限（令牌、用户名、密码错误）。'</span>,</span><br><span class="line">  <span class="number">403</span>: <span class="string">'用户得到授权，但是访问是被禁止的。'</span>,</span><br><span class="line">  <span class="number">404</span>: <span class="string">'发出的请求针对的是不存在的记录，服务器没有进行操作。'</span>,</span><br><span class="line">  <span class="number">406</span>: <span class="string">'请求的格式不可得。'</span>,</span><br><span class="line">  <span class="number">410</span>: <span class="string">'请求的资源被永久删除，且不会再得到的。'</span>,</span><br><span class="line">  <span class="number">422</span>: <span class="string">'当创建一个对象时，发生一个验证错误。'</span>,</span><br><span class="line">  <span class="number">500</span>: <span class="string">'服务器发生错误，请检查服务器。'</span>,</span><br><span class="line">  <span class="number">502</span>: <span class="string">'网关错误。'</span>,</span><br><span class="line">  <span class="number">503</span>: <span class="string">'服务不可用，服务器暂时过载或维护。'</span>,</span><br><span class="line">  <span class="number">504</span>: <span class="string">'网关超时。'</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
 </ul>
 <h2 id="http-工作原理">6.6 HTTP 工作原理</h2>
 <ul>
@@ -4156,15 +4800,90 @@
 <li>释放连接 TCP 连接：若 connection 模式为 close，则服务器主动关闭 TCP 连接，客户端被动关闭连接，释放 TCP 连接;若 connection 模式为 keepalive，则该连接会保持一段时间，在该时间内可以继续复用该 TCP 连接</li>
 <li>客户端浏览器解析 HTML 内容：客户端浏览器首先解析状态行，查看表明请求是否成功的状态代码；然后解析每一个响应头，响应头告知以下为若干字节的 HTML 文档和文档的字符集；最后客户端浏览器读取响应数据 HTML，根据 HTML 的语法对其进行格式化，并在浏览器窗口中显示</li>
 </ul>
+<h2 id="http-各个版本区别">6.7 HTTP 各个版本区别</h2>
+<ul>
+<li><a href="https://juejin.im/post/6844903923136856078" target="_blank" rel="noopener">参考地址</a></li>
+<li>HTTP 协议共经历了 4 个版本：<code>HTTP 0.9 -&gt; HTTP 1.0 -&gt; HTTP 1.1 -&gt; HTTP 2</code></li>
+</ul>
+<h2 id="http-0.9">6.7.1 HTTP 0.9</h2>
+<ul>
+<li>HTTP 0.9 是一个最古老的版本</li>
+<li>只支持 GET 请求方式：由于不支持其他请求方式，因此客户端是没办法向服务端传输太多的信息</li>
+<li>没有请求头概念：所以不能在请求中指定版本号，服务端也只具有返回 HTML 字符串的能力</li>
+<li>短连接，服务端相响应之后，立即关闭 TCP 连接</li>
+</ul>
+<h2 id="http-1.0">6.7.2 HTTP 1.0</h2>
+<p><strong>基本改动</strong></p>
+<ul>
+<li>请求方式新增了 POST，DELETE，PUT，HEADER 等方式</li>
+<li>增添了请求头和响应头的概念，在通信中指定了 HTTP 协议版本号，以及其他的一些元信息（比如: 状态码、权限、缓存、内容编码）</li>
+<li>扩充了传输内容格式，图片、音视频资源、二进制等都可以进行传输</li>
+<li>在这个版本主要的就是对请求和响应的元信息进行了扩展，客户端和服务端有更多的获取当前请求的所有信息，进而更好更快的处理请求相关内容</li>
+</ul>
+<p><strong>Content-Type</strong></p>
+<ul>
+<li>在 HTTP 1.0 的时候，任何的资源都可以被传输，传输的格式呢也是多种多样的，客户端在收到响应体的内容的时候就是根据这个 Content-Type 去进行解析的，所以服务端返回时候必须带着这个字段 &gt; 在 chrome 浏览器中，当跨域请求回来的数据 MIME type 同跨域标签应有的 MIME type 不匹配时，浏览器会启动 CORB 保护数据不被泄漏。被保护的数据有: html、xml、json。(eg: script、img 标签所支持的 MIME type和他们都不一致)，所以服务端在返回资源的时候一定要对应返回正确的 Content-Type，以免浏览器屏蔽返回结果。 &gt; 笔者遇到的问题是在 chrome v76 版本之后，跨域图片资源当请求回来的数据 Content-Type 不是 image/*，图片会被拦截，页面不展示图片。</li>
+</ul>
+<p><strong>特性</strong></p>
+<ul>
+<li>无状态：服务器不跟踪不记录请求过的状态
+<ul>
+<li>对于无状态的特性可以借助 cookie/session 机制来做身份认证和状态记录</li>
+</ul></li>
+<li>短连接：浏览器每次请求都需要建立 tcp 连接
+<ul>
+<li>无法复用连接：每次发送请求，都需要进行一次tcp连接（即3次握手4次挥手），使得网络的利用率非常低</li>
+<li>队头阻塞：HTTP 1.0 规定在前一个请求响应到达之后下一个请求才能发送，如果前一个阻塞，后面的请求也给阻塞的</li>
+</ul></li>
+</ul>
+<h2 id="http-1.1">6.7.3 HTTP 1.1</h2>
+<ul>
+<li>HTTP 1.1 是在 1.0 发布之后的半年就推出了，完善了 1.0 版本，目前也还有很多的互联网项目基于 HTTP 1.1 在向外提供服务</li>
+</ul>
+<p><strong>特性</strong></p>
+<ul>
+<li>长连接：新增 Connection 字段，可以设置 keep-alive 值保持连接不断开
+<ul>
+<li>HTTP 1.1 默认保持长连接，数据传输完成保持 tcp 连接不断开,继续用这个通道传输数据</li>
+</ul></li>
+<li>管道化：基于上面长连接的基础，管道化可以不等第一个请求响应继续发送后面的请求，但响应的顺序还是按照请求的顺序返回
+<ul>
+<li>管道化的请求响应：<code>请求1 --&gt; 请求2 --&gt; 请求3 &gt; 响应1 --&gt; 响应2 --&gt; 响应3</code></li>
+<li>即使服务器先准备好响应 2，也是按照请求顺序先返回响应 1</li>
+<li>虽然管道化，可以一次发送多个请求，但是响应仍是顺序返回，仍然无法解决队头阻塞的问题</li>
+</ul></li>
+<li>缓存处理：新增字段 cache-control
+<ul>
+<li>当浏览器请求资源时，先看是否有缓存的资源，如果有缓存，直接取，不会再发请求，如果没有缓存，则发送请求</li>
+<li>通过设置字段 cache-control 来控制缓存</li>
+</ul></li>
+<li>断点传输
+<ul>
+<li>在上传/下载资源时，如果资源过大，将其分割为多个部分，分别上传/下载，如果遇到网络故障，可以从已经上传/下载好的地方继续请求，不用从头开始，提高效率</li>
+</ul></li>
+</ul>
+<h2 id="http-2">6.7.3 HTTP 2</h2>
+<p><strong>特性</strong></p>
+<ul>
+<li>二进制分帧：HTTP 1.x 的解析是基于文本，HTTP 2 之后将所有传输的信息分割为更小的消息和帧，并对它们采用二进制格式的编码，提高传输效率</li>
+<li>多路复用：在共享 TCP 链接的基础上同时发送请求和响应，基于二进制分帧，在同一域名下所有访问都是从同一个 tcp 连接中走，http 消息被分解为独立的帧，乱序发送，服务端根据标识符和首部将消息重新组装起来</li>
+<li>头部压缩：
+<ul>
+<li>由于 HTTP 是无状态的，每一个请求都需要头部信息标识这次请求相关信息，所以会造成传输很多重复的信息，当请求数量增大的时候，消耗的资源就会慢慢积累上去</li>
+<li>HTTP 2 可以对每个连接维护一个头部信息字典，差量进行更新头信息，减少头部信息传输占用的资源</li>
+<li><a href="https://imququ.com/post/header-compression-in-http2.html" target="_blank" rel="noopener">HTTP 2 头部压缩</a></li>
+</ul></li>
+</ul>
 <h1 id="https-协议-1">7. HTTPS 协议</h1>
 <ul>
 <li><a href="https://juejin.im/post/5ca6a109e51d4544e27e3048#heading-0" target="_blank" rel="noopener">参考地址</a></li>
+<li><a href="http://www.ruanyifeng.com/blog/2014/02/ssl_tls.html" target="_blank" rel="noopener">参考地址</a></li>
 </ul>
 <h2 id="https-概述">7.1 HTTPS 概述</h2>
 <p><strong>什么是 HTTPS</strong></p>
 <ul>
-<li>HTTPS 是在 HTTP 上建立 SSL 加密层，并对传输数据进行加密，是 HTTP 协议的安全版，现在它被广泛用于万维网上安全敏感的通讯，例如交易支付方面</li>
-<li>HTTPS主要作用是 :
+<li>HTTPS 是在 HTTP 上建立 SSL/TLS 加密层，并对传输数据进行加密，是 HTTP 协议的安全版，现在它被广泛用于万维网上安全敏感的通讯，例如交易支付方面</li>
+<li>HTTPS 主要作用是 :
 <ul>
 <li>对数据进行加密，并建立一个信息安全通道，来保证传输过程中的数据安全</li>
 <li>对网站服务器进行真实身份认证</li>
@@ -4172,22 +4891,26 @@
 </ul>
 <p><strong>为什么需要 HTTPS</strong></p>
 <ul>
-<li>HTTP 通信使用明文（不加密），内容可能被窃听</li>
-<li>HTTP 无法证明报文的完整性，所以可能遭篡改</li>
-<li>HTTP 协议无法验证通信方身份，任何人都可以伪造虚假服务器欺骗用户，实现“钓鱼欺诈”，用户无法察觉</li>
-</ul>
-<p><strong>HTTPS 优势</strong></p>
+<li>不使用 SSL/TLS 的 HTTP 通信，就是不加密的通信</li>
+<li>所有信息明文传播，带来了三大风险：
 <ul>
-<li>数据隐私性：内容经过对称加密，每个连接生成一个唯一的加密密钥</li>
-<li>数据完整性：内容传输经过完整性校验</li>
-<li>身份认证：第三方无法伪造服务端（客户端）身份</li>
+<li>窃听风险（eavesdropping）：第三方可以获知通信内容</li>
+<li>篡改风险（tampering）：第三方可以修改通信内容</li>
+<li>冒充风险（pretending）：第三方可以冒充他人身份参与通信</li>
+</ul></li>
+<li>SSL/TLS 协议是为了解决这三大风险而设计的，希望达到：
+<ul>
+<li>所有信息都是加密传播，第三方无法窃听</li>
+<li>具有校验机制，一旦被篡改，通信双方会立刻发现</li>
+<li>配备身份证书，防止身份被冒充</li>
+</ul></li>
 </ul>
 <h2 id="https-解决方案">7.2 HTTPS 解决方案</h2>
 <ul>
-<li>HTTPS 并非是应用层的一种新协议，只是 HTTP 通信接口部分用 SSL 和 TLS 协议代替而已</li>
-<li>通常，HTTP 直接和 TCP 通信，当使用 SSL 时，则演变成先和 SSL 通信，再由 SSL 和 TCP 通信，所谓 HTTPS，其实就是身披 SSL 协议这层外壳的 HTTP</li>
-<li>在采用 SSL 后，HTTP 就拥有了 HTTPS 的加密、证书和完整性保护这些功能 <img src="https://gitee.com/h428/img/raw/master/note/00000028.jpg" alt="HTTPS" /></li>
-<li>HTTPS 协议的主要功能基本都依赖于 TLS/SSL 协议，TLS/SSL 的功能实现主要依赖于三类基本算法：散列函数 、对称加密、非对称加密，其利用非对称加密实现身份认证和密钥协商，对称加密算法采用协商的密钥对数据加密，基于散列函数验证信息的完整性 <img src="https://gitee.com/h428/img/raw/master/note/00000029.jpg" alt="SSL" /></li>
+<li>HTTPS 并非是应用层的一种新协议，只是 HTTP 通信接口部分用 SSL/TLS 协议代替而已</li>
+<li>通常，HTTP 直接和 TCP 通信，当使用 SSL 时，则演变成先和 SSL/TLS 通信，再由 SSL/TLS 和 TCP 通信，所谓 HTTPS，其实就是身披 SSL/TLS 协议这层外壳的 HTTP</li>
+<li>在采用 SSL/TLS 后，HTTP 就拥有了 HTTPS 的加密、证书和完整性保护这些功能 <img src="https://gitee.com/h428/img/raw/master/note/00000028.jpg" alt="HTTPS" /></li>
+<li>HTTPS 协议的主要功能基本都依赖于 SSL/TLS 协议，SSL/TLS 的功能实现主要依赖于三类基本算法：散列函数 、对称加密、非对称加密，其利用非对称加密实现身份认证和密钥协商，对称加密算法采用协商的密钥对数据加密，基于散列函数验证信息的完整性 <img src="https://gitee.com/h428/img/raw/master/note/00000029.jpg" alt="SSL" /></li>
 </ul>
 <p><strong>解决内容可能被窃听的问题 - 加密</strong></p>
 <ul>
@@ -4210,15 +4933,19 @@
 </ul>
 <h2 id="https-工作流程">7.3 HTTPS 工作流程</h2>
 <ul>
-<li>HTTPS 工作流程如图所示 <img src="https://gitee.com/h428/img/raw/master/note/00000032.jpg" alt="HTTPS 工作流程" /></li>
-<li>首先，客户端发起 HTTPS 请求，根据 RFC2818 的规定，Client知道需要连接 Server 的 443（默认）端口</li>
-<li>Server 把事先配置好的公钥证书（public key certificate）返回给客户端</li>
-<li>Client 验证公钥证书：比如是否在有效期内，证书的用途是不是匹配Client 请求的站点，是不是在 CRL 吊销列表里面，它的上一级证书是否有效，这是一个递归的过程，直到验证到根证书（操作系统内置的Root 证书或者Client内置的Root证书）。如果验证通过则继续，不通过则显示警告信息</li>
-<li>Client 使用伪随机数生成器生成加密所使用的对称密钥，然后用证书的公钥加密这个对称密钥，发给 Serve</li>
-<li>Server 使用自己的私钥（private key）解密这个消息，得到对称密钥，至此，Client 和 Server 双方都持有了相同的对称密钥</li>
-<li>Server 使用对称密钥加密“明文内容A”，发送给 Client</li>
-<li>Client 使用对称密钥解密响应的密文，得到“明文内容A”</li>
-<li>Client再次发起HTTPS的请求，使用对称密钥加密请求的“明文内容B”，然后Server使用对称密钥解密密文，得到“明文内容B”</li>
+<li>SSL/TSL 连接建立主要涉及 4 次握手，主要交换下列信息：</li>
+<li>数字证书：该证书包含了公钥等信息，一般是由服务器发给客户端，接收方通过验证这个证书是不是由信赖的 CA 签发，或者与本地的证书相对比，来判断证书是否可信；假如需要双向验证，则服务器和客户端都需要发送数字证书给对方验证</li>
+<li>3 个随机数：用于双方生成对称加密的密钥</li>
+<li>加密通信协议：双方协商采用哪一种方式加密，若两者支持的加密方式不匹配，无法通信</li>
+</ul>
+<p><strong>SSL/TLS 握手过程</strong></p>
+<ul>
+<li>1、client 给出协议版本号、客户端生成的随机数以及客户端支持的加密方法</li>
+<li>2、server 确认双方采用的加密算法，并给出数字证书以及服务器随机生成的随机数</li>
+<li>3、client 收到证书后，确认证书有效，然后生成一个新的随机数、并使用证书中的公钥加密该随机数，发送给 server</li>
+<li>4、server 使用自己的私钥解密得到随机数，随后通知客户端编码改变，之后的信息都将使用双方商定的加密方法和密钥发送</li>
+<li>自此，握手完成，双方都各自得到三个随机数，可以基于此生成会话密钥，之后的所有信息都可以使用该会话密钥加密</li>
+<li>握手过程大致如图所示 <img src="https://gitee.com/h428/img/raw/master/note/00000032.jpg" alt="HTTPS 工作流程" /></li>
 </ul>
 
       
@@ -4303,7 +5030,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-count">7</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
