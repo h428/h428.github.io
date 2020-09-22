@@ -150,6 +150,385 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%EF%BC%9A%E6%8E%92%E5%BA%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://gitee.com/h428/img/raw/master/base/avatar.jpg">
+      <meta itemprop="name" content="h428">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="h428 的个人博客">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/09/17/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%EF%BC%9A%E6%8E%92%E5%BA%8F/" class="post-title-link" itemprop="url">排序</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-09-17 22:07:33 / 修改时间：22:07:38" itemprop="dateCreated datePublished" datetime="2020-09-17T22:07:33+08:00">2020-09-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">数据结构</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="冒泡排序">冒泡排序</h1>
+<ul>
+<li>每趟挑选最大的数从前往后冒泡</li>
+<li>优化：当其中某一趟没有交换位置时，表示已经有序，可以提前 break</li>
+<li>代码举例，此处包含模板代码，后面的其他排序省略模板代码：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 执行 100 次测试</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">            test(<span class="number">20</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 生成 n 个整数并测试排序</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> n n 个数</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (n &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"n must be positive"</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// generate n number</span></span><br><span class="line">        List&lt;Integer&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;(n);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            list.add((<span class="keyword">int</span>) (Math.random() * <span class="number">100</span>));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// oldList 用于 Assert 和 打印</span></span><br><span class="line">        List&lt;Integer&gt; oldList = <span class="keyword">new</span> ArrayList&lt;&gt;(n);</span><br><span class="line">        oldList.addAll(list);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        bubbleSort(list);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 判定排序正确</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n - <span class="number">1</span>; i++) &#123;</span><br><span class="line">            Assert.assertTrue(list.get(i) &lt;= list.get(i+<span class="number">1</span>));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Assert 判定数据没有丢失</span></span><br><span class="line">        <span class="keyword">for</span> (Integer num : oldList) &#123;</span><br><span class="line">            Assert.assertTrue(list.contains(num));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 判定元素数量正确</span></span><br><span class="line">        Assert.assertEquals(n, oldList.size());</span><br><span class="line">        Assert.assertEquals(n, list.size());</span><br><span class="line"></span><br><span class="line">        System.out.println(oldList + <span class="string">"  ---&gt;  "</span> + list);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function"><span class="keyword">void</span> <span class="title">swap</span><span class="params">(List&lt;T&gt; list, <span class="keyword">int</span> i, <span class="keyword">int</span> j)</span> </span>&#123;</span><br><span class="line">        T tmp = list.get(i);</span><br><span class="line">        list.set(i, list.get(j));</span><br><span class="line">        list.set(j, tmp);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T extends Comparable&lt;T&gt;&gt; <span class="function"><span class="keyword">void</span> <span class="title">bubbleSort</span><span class="params">(List&lt;T&gt; list)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (list == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"list can not be null"</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> len = list.size();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (len &lt; <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 从前往后冒泡，每次冒泡最大值存在 i</span></span><br><span class="line">        <span class="keyword">boolean</span> change;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = len - <span class="number">1</span>; i &gt;= <span class="number">0</span>; --i) &#123;</span><br><span class="line"></span><br><span class="line">            change = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; i; j++) &#123;</span><br><span class="line">                <span class="comment">// 若当前当前位置更大，则往后冒泡</span></span><br><span class="line">                <span class="keyword">if</span> (list.get(j).compareTo(list.get(j+<span class="number">1</span>)) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                    swap(list, j, j+<span class="number">1</span>);</span><br><span class="line">                    change = <span class="keyword">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (!change) &#123;</span><br><span class="line">                <span class="comment">// 优化，若没有变化则表示已经有序，可以提前结束</span></span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="选择排序">选择排序</h1>
+<ul>
+<li>每趟选择一个最大/小值放入首/末位 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T extends Comparable&lt;T&gt;&gt; <span class="function"><span class="keyword">void</span> <span class="title">selectSort</span><span class="params">(List&lt;T&gt; list)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (list == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"list can not be null"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> len = list.size();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (len &lt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    T max; <span class="keyword">int</span> maxIdx;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = len - <span class="number">1</span>; i &gt; <span class="number">0</span>; --i) &#123;</span><br><span class="line">        <span class="comment">// 每躺挑选最大值放入末尾 i</span></span><br><span class="line">        maxIdx = i;</span><br><span class="line">        max = list.get(i);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; i; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (list.get(j).compareTo(max) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                maxIdx = j;</span><br><span class="line">                max = list.get(j);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// swap</span></span><br><span class="line">        <span class="keyword">if</span> (maxIdx != i) &#123;</span><br><span class="line">            swap(list, maxIdx, i);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="插入排序">插入排序</h1>
+<ul>
+<li>假设前半部分有序，每次挑选一个后面的数，插入到有序数组中 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T extends Comparable&lt;T&gt;&gt; <span class="function"><span class="keyword">void</span> <span class="title">insertSort</span><span class="params">(List&lt;T&gt; list)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (list == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"list can not be null"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> len = list.size();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (len &lt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    T num; <span class="keyword">int</span> idx;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; len; i++) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 将 a[i] 插入到有序序列 [0, i) 中</span></span><br><span class="line">        num = list.get(i);</span><br><span class="line">        idx = i - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span> (idx &gt;= <span class="number">0</span> &amp;&amp; list.get(idx).compareTo(num) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">// idx 大于 num，后移腾位置</span></span><br><span class="line">            list.set(idx+<span class="number">1</span>, list.get(idx));</span><br><span class="line">            --idx;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 直至找到可以放置的位置或者 idx = 0</span></span><br><span class="line">        list.set(idx + <span class="number">1</span>, num);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="希尔排序">希尔排序</h1>
+<h1 id="堆排序">堆排序</h1>
+<h1 id="归并排序">归并排序</h1>
+<ul>
+<li>递归排序左右子区间，然后 merge，需要 O(n) 的辅助空间 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 递归排序 [left, right) 区间</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> &lt;T extends Comparable&lt;T&gt;&gt; <span class="function"><span class="keyword">void</span> <span class="title">mergeSort</span><span class="params">(List&lt;T&gt; list, <span class="keyword">int</span> left, <span class="keyword">int</span> right)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> len = right - left;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 一个数，无需排序</span></span><br><span class="line">    <span class="keyword">if</span> (len &lt; <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> mid = left + len / <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 递归排序左右子区间</span></span><br><span class="line">    mergeSort(list, left, mid);</span><br><span class="line">    mergeSort(list, mid, right);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// merge</span></span><br><span class="line">    List&lt;T&gt; help = <span class="keyword">new</span> ArrayList&lt;&gt;(len);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> l = left, r = mid;</span><br><span class="line">    <span class="keyword">while</span> (l &lt; mid || r &lt; right) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 若右边拷贝完毕或者左边未越界且比右边小，则用左边</span></span><br><span class="line">        <span class="keyword">if</span> (r &gt;= right || (l &lt; mid &amp;&amp; list.get(l).compareTo(list.get(r)) &lt;= <span class="number">0</span>)) &#123;</span><br><span class="line">            <span class="comment">// 右边没了或者左边更小，用左边的</span></span><br><span class="line">            help.add(list.get(l++));</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            help.add(list.get(r++));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 拷贝回原数组</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; len; i++) &#123;</span><br><span class="line">        list.set(left + i, help.get(i));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="快排">快排</h1>
+<ul>
+<li>选定一个 key，然后做一趟处理，保证左边小于 key，右边大于 key，然后递归处理左右子区间 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T extends Comparable&lt;T&gt;&gt; <span class="function"><span class="keyword">void</span> <span class="title">quickSort</span><span class="params">(List&lt;T&gt; list)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (list == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"list can not be null"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> len = list.size();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (len &lt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    quickSort(list, <span class="number">0</span>, list.size());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 递归排序 [left, right) 区间</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> &lt;T extends Comparable&lt;T&gt;&gt; <span class="function"><span class="keyword">void</span> <span class="title">quickSort</span><span class="params">(List&lt;T&gt; list, <span class="keyword">int</span> left, <span class="keyword">int</span> right)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> len = right - left;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (len &lt; <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> idx = partition(list, left, right);</span><br><span class="line"></span><br><span class="line">    quickSort(list, left, idx);</span><br><span class="line">    quickSort(list, idx+<span class="number">1</span>, right);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 一趟处理</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> &lt;T extends Comparable&lt;T&gt;&gt; <span class="function"><span class="keyword">int</span> <span class="title">partition</span><span class="params">(List&lt;T&gt; list, <span class="keyword">int</span> left, <span class="keyword">int</span> right)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    T key = list.get(left);</span><br><span class="line">    <span class="keyword">int</span> l = left, r = right - <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (l &lt; r) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (l &lt; r &amp;&amp; list.get(r).compareTo(key) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">            --r;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        list.set(l, list.get(r));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (l &lt; r &amp;&amp; list.get(l).compareTo(key) &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">            ++l;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        list.set(r, list.get(l));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    list.set(l, key);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> l;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/17/MySQL/MySQL%EF%BC%9A%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://gitee.com/h428/img/raw/master/base/avatar.jpg">
+      <meta itemprop="name" content="h428">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="h428 的个人博客">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/09/17/MySQL/MySQL%EF%BC%9A%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">MySQL 基本原理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-09-17 11:14:14 / 修改时间：22:10:24" itemprop="dateCreated datePublished" datetime="2020-09-17T11:14:14+08:00">2020-09-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="存储引擎">1. 存储引擎</h1>
+<ul>
+<li>常见的存储引擎有：MyISAM （发音类似 My I SAM）、InnoDB、MEMORY、Archive</li>
+</ul>
+<p><strong>MyISAM</strong></p>
+<ul>
+<li>MyISAM 特性为
+<ul>
+<li>使用表级索，并发性差，不支持事务</li>
+<li>主机宕机后，MyISAM 表已损坏，灾难性恢复不佳</li>
+<li>可以配合锁，实现操作系统下的复制、备份、迁移</li>
+<li>只缓存索引，数据的缓存是利用操作系统缓冲区来实现的，可能引发过多的系统调用且效率不佳</li>
+<li>数据紧凑存储（类似线性表的方式进行组织），因此可以获得更小的索引和更快的全表扫描性能</li>
+</ul></li>
+<li>MyISAM 索引原理：
+<ul>
+<li>MyISAM 数据可以看成按顺序表的形式组织，每行记录有自己的地址</li>
+<li>MyISAM 使用 B+ 树作为索引结构，当创建索引列时，会使用该列的数据构造一个 B+ 树，而该 B+ 树的叶节点的 data 域存放的就是对应数据记录的地址</li>
+<li>根据上述索引原理可以看出，MyISAM 数据的组织顺序与主键无关，主键索引除了要求 key 唯一外，与其他索引无区别，因此 MyISAM 的主键索引相对于 InnoDB 来说是非聚簇索引</li>
+</ul></li>
+</ul>
+<p><strong>InnoDB</strong></p>
+<ul>
+<li>MySQL 5.5 后默认使用 InnoDB 存储引擎</li>
+<li>其优点为：灾难恢复性好，支持事务，使用行级锁，支持外键关联，支持热备份</li>
+<li>对于 InnoDB 的数据表，其数据的物理组织形式是簇表，即主键索引为聚簇索引，数据会按主键的顺序进行物理分布</li>
+<li>InnoDB 还实现了缓冲管理，不仅能缓冲索引也能缓冲数据，并且会自动创建散列索引以加快数据的获取</li>
+<li>InnoDB 索引原理：
+<ul>
+<li>虽然 InnoDB 也使用 B+ 树作为索引结构，但具体实现方式却与 MyISAM 截然不同</li>
+<li>第一个重大区别就是 InnoDB 的数据文件本身就是索引文件，即在 InnoDB 中，数据文件本身就是根据主键按照 B+ 树组织的一个索引结构，这棵 B+ 树的 data 域保存了完整的数据记录</li>
+<li>区别于 MyISAM，InnoDB 的主键索引为聚簇索引，数据按照主键进行组织</li>
+<li>因此，根据 InnoDB 的这种数组组织原理，InnoDB 要求表必须有主键（而 MyISAM 可以没有主键），否则无法根据主键组织数据的存储</li>
+<li>如果没有显式指定主键，MySQL 会自动选择一个可以唯一标识数据记录的列作为主键，如果不存在这种列，MySQL 会自动为 InnoDB 生成一个隐含字段作为主键，这个字段长度为诶 6 Byte，类型为长整型</li>
+<li>第二个与 MyISAM 索引的区别就是：InnoDB 的辅助索引的 data 域存储相应记录的主键的值而不是数据的地址，即 InnoDB 的所有辅助索引都要引用主键作为 data 域</li>
+<li>显然，聚簇索引的这种实现方式使得按主键搜索十分高效，但是根据辅助索引时需要检索索引两边：首先检索辅助索引获得主键，然后用主键到主索引中检索获得记录</li>
+<li>根据上述 InnoDB 的聚簇索引原理，就很容易明白为什么不建议使用过长的字段作为主键，因为所有的辅助索引都引用该主索引，过长的主索引将导致辅助索引变的过大</li>
+<li>再者，对于 InnoDB，使用非单调的字段作为主键也会产生问题，其会导致在插入新记录后，数据文件为了维持 B+ 树的平衡性而频繁地调整或旋转，十分低效，因此对于 InnoDB 存储引擎，主键应选择为自增长或者按照插入顺序增长，否则会影响插入的性能（过多的 B+ 树平衡旋转调整）</li>
+</ul></li>
+</ul>
+<p><strong>Memory</strong></p>
+<ul>
+<li>提供内存表，也不支持事务和外键</li>
+<li>查询生成的临时表就是采用 Memory 引擎</li>
+<li>由于数据存储在内存中，显著提高数据的访问速度，可用于缓存会频繁访问的、可以重构的数据，计算结果、统计值、中间结果等</li>
+<li>优点为：
+<ul>
+<li>MEMORY表 的每个表可以有多达 32 个索引，每个索引 16 列，以及 500 字节的最大键长度</li>
+<li>可以在一个 MEMORY 表中有非唯一键值</li>
+<li>MEMORY 支持 HASH 索引</li>
+</ul></li>
+<li>缺点为：
+<ul>
+<li>使用表级锁，虽然内存访问快，但如果频繁地读写，表级锁会成为瓶颈</li>
+<li>只支持固定大小的行，varchar 类型字段会因为存储为定长的 char 类型，浪费空间</li>
+<li>不支持 text, blob 字段，当查询需要到临时表时，如果表中有 TEXT, BLOB 字段，那么会转换为基于磁盘的 MyISAM 表，严重降低性能</li>
+<li>由于内存资源成本昂贵，一般不建议设置过大的内存表，如果内存表满了，可以通过清楚数据或者掉秤内存表参数来避免报错</li>
+<li>服务器重启后数据会丢失，对于 Memory 表的复制和维护需要特别小心</li>
+</ul></li>
+</ul>
+<p><strong>InnoDB 与 MyISAM 的大致区别以及如何选择</strong></p>
+<ul>
+<li>从 MySQL5.5.5 以后，InnoDB 是默认引擎</li>
+<li>InnoDB 支持事务，MyISAM 不支持，这一点是非常之重要；事务是一种高级的处理方式，如在一些列增删改中只要哪个出错还可以回滚还原，而 MyISAM 就不可以了</li>
+<li>MyISAM 适合查询以及插入为主的应用，InnoDB 适合频繁修改以及涉及到安全性较高的应用</li>
+<li>InnoDB 支持外键，MyISAM 不支持</li>
+<li>它们的索引原理不同</li>
+<li>InnoDB 支持 MVCC, 而 MyISAM 不支持</li>
+<li>MySQL 5.6 以前的版本，只有 MyISAM 存储引擎支持全文索引；MySQL 5.6 及以后的版本，MyISAM 和 InnoDB 存储引擎均支持全文索引</li>
+<li>InnoDB 中不保存表的行数，如 <code>select count(*) from table</code> 时，InnoDB 需要扫描一遍整个表来计算有多少行，但是 MyISAM 只要简单的读出保存好的行数即可；注意的是，当 count(*) 语句包含 where 条件时 MyISAM 也需要扫描整个表</li>
+<li>对于自增长的字段，InnoDB 中必须包含只有该字段的索引，但是在 MyISAM 表中可以和其他字段一起建立联合索引</li>
+<li>清空整个表时，InnoDB 是一行一行的删除，效率非常慢；MyISAM 则会重建表</li>
+<li>InnoDB 支持行锁（某些情况下还是锁整表，如 update table set a=1 where user like '%lee%'），而 MyISAM 为表锁</li>
+<li>有人说 MYISAM 只能用于小型应用，其实这只是一种偏见，如果数据量比较大，这是需要通过升级架构来解决，比如分表分库，读写分离，而不是单纯地依赖存储引擎</li>
+<li>现在一般都是选用 InnoDB 了，主要是 MyISAM 的全表锁，读写串行问题，并发效率锁表，效率低，MyISAM 对于读写密集型应用一般是不会去选用的</li>
+</ul>
+<h1 id="事务特性">2. 事务特性</h1>
+<ul>
+<li>事务：程序中的一系列相关操作</li>
+<li>事务的特性：原子性（Atomicity）、一致性（Consistency）、隔离性（Isolation）、持久性（Durability），简称为 &quot;ACID&quot; 特性</li>
+<li>Atomiticy : 事务是数据库操作的逻辑工作单位，不可分割，所有操作要么全部成功，要么全部失败</li>
+<li>Consistency ：事务执行的结果必须是使数据库从一个一致性状态变到另一个一致性状态
+<ul>
+<li>因此当数据库只包含成功事务提交的结果时，就说数据库处于一致性状态</li>
+<li>如果数据库系统 运行中发生故障，有些事务尚未完成就被迫中断，这些未完成事务对数据库所做的修改有一部分已写入物理数据库，这时数据库就处于一种不正确的状态，或者说是不一致的状态</li>
+</ul></li>
+<li>Isolation : 一个事务的执行不能干扰其他事务，即一个事务的内部操作对其他操作是隔离的，并发执行之间不能互相干扰，事务有 4 种隔离级别</li>
+<li>Durability : 指的是事务一旦成功提交，则它对数据的改变就应该是永久性的，不能回滚，接下来的其它操作或者故障不应该对其执行结果有任何影响</li>
+</ul>
+<h1 id="隔离级别">3. 隔离级别</h1>
+<ul>
+<li>当多个线程同时操纵数据库时，数据库系统要能进行隔离操作，以保证各个线程获取的数据的准确性</li>
+<li>脏读：一个事务堵到了另一个事务未提交的数据</li>
+<li>不可重复读：对于数据库的某行数据，一个事务内的多次查询返回了不同的记录值（因为第二次查询该行时已经被另一个事务修改了）</li>
+<li>幻读：幻读的重点在于 insert，T1 批量查询范围记录或更新多条记录，然后等待提交，此时 T2 插入一条满足 T1 条件的新数据并成功提交，导致事务 T1 再次使用同样的选择条件读取的时候，得到了比第一次读取更多的数据集，就好像产生了幻觉一样</li>
+<li>不可重复读和幻读的区别：
+<ul>
+<li>不可重复读重点在于 update 和 delete，而幻读的重点在于 insert</li>
+<li>如果使用锁机制来实现这两种隔离级别，在可重复读中，该 sql 第一次读取到数据后，就将这些数据加锁，其它事务无法修改这些数据，就可以实现可重复读了</li>
+<li>但这种方法却无法锁住 insert 的数据，所以当事务 A 先前读取了数据，或者修改了全部数据，事务 B 还是可以 insert 数据提交，这时事务 A 就会发现莫名其妙多了一条之前没有的数据，这就是幻读，不能通过行锁来避免，需要Serializable隔离级别，读用读锁，写用写锁，读锁和写锁互斥，这么做可以有效的避免幻读、不可重复读、脏读等问题，但会极大的降低数据库的并发能力</li>
+<li>所以说不可重复读和幻读最大的区别，就在于如何通过锁机制来解决他们产生的问题</li>
+<li>上文说的，是使用悲观锁机制来处理这两种问题，但是 MySQL、ORACLE、PostgreSQL 等成熟的数据库，出于性能考虑，都是使用了以乐观锁为理论基础的MVCC（多版本并发控制）来避免这两种问题</li>
+</ul></li>
+<li>隔离级别详细大致如下：</li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">隔离级别</th>
+<th style="text-align: center;">英文</th>
+<th style="text-align: center;">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">读未提交</td>
+<td style="text-align: center;">read uncommited</td>
+<td style="text-align: center;">会脏读，也不可重复读，会幻读</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">读已提交</td>
+<td style="text-align: center;">read commited</td>
+<td style="text-align: center;">避免脏读，但不可重复读，会幻读</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">可重复读</td>
+<td style="text-align: center;">repeatable read</td>
+<td style="text-align: center;">避免脏读，且可重复读，但会幻读</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">序列化</td>
+<td style="text-align: center;">serializable</td>
+<td style="text-align: center;">可避免脏读、不可重复读、幻读</td>
+</tr>
+</tbody>
+</table>
+<p><strong>InnoDB 通过什么方式解决幻读的问题</strong></p>
+<ul>
+<li><a href="https://github.com/Yhzhtk/note/issues/42" target="_blank" rel="noopener">MySQL 的 RR 如何防止幻读</a></li>
+<li>根据标准，RR 隔离级别并不能避免幻读，但实际上，InnoDB 的 RR 级别通过 MVCC 和 next-key lock 解决了幻读的问题，</li>
+<li>要说明白这个问题，首先要明白，MySQL 中的读分为快照读和当前读</li>
+<li>快照读：即普通的 select，例如 <code>select * from table</code>，InnoDB 在执行当前读之前会备份快照，之后其他事务的快照读都会基于该快照继续操作，这样其他后开的事务就看不到当前事务中的内容（其实每个 select 都有自己的快照）</li>
+<li>当前读：特殊的读操作，插入/更新/删除，都属于当前读，处理的都是当前读数据，需要加锁
+<ul>
+<li><code>select * from table where ? lock in share mode</code></li>
+<li><code>select * from table where ? for update</code></li>
+<li><code>insert, update, delete</code></li>
+</ul></li>
+<li>假设有两个事务 T1 和 T2，T1 执行批量查询（快照读）或者批量更新（当前读），T2 执行插入满足 T1 查询条件的数据，我们以此为例说明 MySQL 下幻读的解决</li>
+<li>对于快照读，通过 MVCC 与事务版本号在解决不可重复读的同时解决了幻读，详细参考 <a href="#4-mvcc-原理">MVCC 原理</a>
+<ul>
+<li>对于 RR 下的快照读，由于引入 MVCC 机制，在 T1 开启事务后，其能查询的到的数据保持为当前 readview 所允许读到的最新数据，因此天然地可避免幻读</li>
+<li>即使此时 T2 开事务插入数据，由于其版本号大于 T1 版本号，因此插入的数据会被 T1 的 readview 过滤并不会被 T1 读到，从而避免了幻读</li>
+<li>注意，MVCC 快照读本身就包括两部分可见：1、事务开始前已提交的可见 2、自己本事务的修改可见，因此若 T2 先开事务并插入数据但未提交，插入的数据对于 T1 仍然不可见，RR 有个一致性快照（T2 先开事务插入数据但未提交属于 MVCC 解决脏读问题）</li>
+</ul></li>
+<li>对于当前读（写也算当前读），InnoDB 通过 Next-Key 锁来解决幻读，Next-Key 锁是行锁和GAP（间隙锁）的合并，详细参考 <a href="#5-next-key-锁">Next-Key 锁</a></li>
+</ul>
+<h1 id="mvcc-原理">4. MVCC 原理</h1>
+<ul>
+<li><a href="https://www.cnblogs.com/rongdi/p/13378892.html" target="_blank" rel="noopener">参考地址</a></li>
+<li>MVCC 的作用：
+<ul>
+<li>用于事务的回滚 -&gt; undo log</li>
+<li>事务的在尽量不加锁的情况下进行并发控制</li>
+<li>解决了快照读下的幻读问题</li>
+</ul></li>
+</ul>
+<p><strong>MVCC 实现原理</strong></p>
+<ul>
+<li>InnoDB 为数据表增加两个隐藏列 DATA_TRX_ID 和 DATA_ROLL_PTR，用于实现 MVCC，其中 DATA_TRX_ID 表示事务 id，DATA_ROLL_PTR 指向 undo log 指针，注意并不是所谓的 delete_trx_id <img src="https://gitee.com/h428/img/raw/master/note/00000137.jpg" alt="隐藏列" /></li>
+<li>当事务 A 对 x 进行更新后，该行即产生了一个新版本和旧版本，假设插入之前该行的事务 ID 为 100，当前事务 A 的事务 ID 为 200，操作过程如下：
+<ul>
+<li>对 ID = 1 加排他锁</li>
+<li>把原有数据拷贝到 undo log 中</li>
+<li>修改行值并更新 DATA_TRX_ID 为当前事务 ID，并将 DATA_ROLL_PTR 指向 undo log 中的记录</li>
+<li>注意 undo log 是一个链表，可能 B 事务在 A 之后开并先执行了 update，这时 A update 会锁住，B commit 后 A 可以继续，若是可重复读，但能访问的数据不是前一个节点而应该是前前节点，因为 A 先于 B 开启，不能读到 B update 之后的数据，所以必须以链表形式保存下所有的更新记录</li>
+</ul></li>
+<li>基于上述操作，如何判断读取的时候应该使用哪个版本？MySQL 引入了当前状态的 ReadView 的概念，主要包含如下属性：
+<ul>
+<li>mIds : 代表生成 ReadView 时，当前活跃的事务 id 但不包括当前事务 id，活跃即开启了还没提交</li>
+<li>min_trx_id : mIds 中的最小值，即最早开的还活跃的事务</li>
+<li>max_trx_id : 生成 ReadView 时，最大的事务 id，注意不要理解成 mIds 中最大的 ID，对于 RR 快照读，由于需要可重复读，一般只生成一次 ReadView，此时 max_trx_id 为本事务的 id；但对于 RC，由于需要读取到其他后开事务 commit 后的数据，因此需要多次生成 ReadView，因此此时 max_trx_id 可能大于当前事务 id</li>
+<li>creator_trx_id : 当前事务 id</li>
+</ul></li>
+<li>ReadView 引入上述 4 个属性后，如何判断读取哪个版本的数据呢？
+<ul>
+<li>如果被访问的数据的 data_trx_id 小于 min_trx_id，则表示该版本的数据在生成 ReadView 之前已经 commit，可以访问</li>
+<li>如果被访问数据的 data_trx_id 大于 max_trx_id，表示该版本的数据是在 ReadView 生成之后新生成的事务写入的，当前 ReadView 不能访问</li>
+<li>如果被访问数据的 data_trx_id 处于区间 <code>[min_trx_id, max_trx_id]</code>，则判断该数据的 data_trx_id 是否处于 mIds 列表，则表示生成 ReadView 时该数据为还活跃着的事务修改的，不能访问（这也是为什么不把自己的 id 放入 mIds 中，否则导致自己修改的无法访问）；如果不在，则说明生成 ReadView 时该版本的事务已经提交，可以访问（读已提交则需要生成多次 ReadView 以保证读到更新的数据）</li>
+</ul></li>
+</ul>
+<p><strong>MVCC 在 RC 和 RR 隔离级别下有啥区别</strong></p>
+<ul>
+<li>先说 RC 级别，两个版本不一致，说明可能事务 A 两次使用的 ReadView 里的内容肯定是有不一样，结合 B 事务中间有提交，而提交事务很明显会影响到 mIds 当前活跃事务列表，因为事务提交之后就不是活跃事务了不可能再出现在 mIds 列表中了，这一点很好理解</li>
+<li>再来看 RR 隔离级别事务 A，如果要两次读取的 x 值一致，除非两次用来判定的 ReadView 没有啥变化，这不由得让我们想起了缓存的用法，是不是可以在 A 事务开启的时候生成一个 ReadView，然后在整个 A 事务期间都用这一份 ReadView 就行了呢，就像用缓存一样</li>
+<li>而 RC 级别每次查询都生成一个最新的 ReadView，是不是就可以产生区别了，这算是一个比较常规并且巧妙的设计了</li>
+</ul>
+<p><strong>InnoDB 解决幻读</strong></p>
+<ul>
+<li>在 RR 下，对于快照读，只在开启事务时生成一次 ReadView，从而天然避免了幻读</li>
+<li>而对于当前读，InnoDB 则会对相关的数据自动加 next-key 锁，以避免其他事务修改该数据，只有当前事务提交后，其他数据才能修改相关数据，因此当前事务的前后读取到的相关数据不会变化，从而避免了幻读</li>
+</ul>
+<h1 id="next-key-锁">5. Next-Key 锁</h1>
+<ul>
+<li>Next-Key 锁是行锁和 GAP（间隙锁）的合并，行锁上文已经介绍了，接下来说下 GAP 间隙锁</li>
+<li>行锁可以防止不同事务版本的数据修改提交时造成数据冲突的情况，但如何避免别的事务插入数据就成了问题</li>
+<li>RR 级别中，事务 T1 在批量 update 后加锁，事务 T2 将无法插入新数据，这样事务 T1 在 update 前后读的数据保持一致，避免了幻读，这个锁，就是 Gap 锁</li>
+<li>对于 Gap 锁是这么实现的：
+<ul>
+<li>若 T1 中的 where 条件是个索引，由于 InnoDB 会维护关于该索引的 B+ 树，data 域为主键，当 T1 执行当前读时，则在条件所在的 B+ 树区间加锁，此时将 T2 事务无法插入索引列值若在该区间的数据（区间外的可以插入），直到 T1 提交后 T2 才能插入，这样 T1 的多次当前读都是一致的，从而避免了幻读</li>
+<li>若 T1 中的 where 条件不是索引字段，则会给全表加 gap 锁，此时 T2 将无法插入任何数据，直到 T1 提交事务后 T2 才可以插入，这样 T1 的多次当前读都是一致的，从而避免了幻读</li>
+</ul></li>
+<li>总结：行锁防止别的事务修改或删除，GAP 锁防止别的事务新增，行锁和 GAP 锁结合形成的的 Next-Key 锁共同解决了 RR 级别在写数据时的幻读问题</li>
+</ul>
+<h1 id="范式">6. 范式</h1>
+<ul>
+<li>1 NF : 列不可分割，标准的二维表天然满足，在任何一个关系数据库中，第一范式（1NF）是对关系模式的基本要求，不满足第一范式（1NF）的数据库就不是关系数据库</li>
+<li>2 NF : 非主属性完全依赖于主属性，而不能只依赖关键字的一部分，比如如果以 (id, age) 为主键，其他列就会部分依赖主键，因为其他列完全依赖 id</li>
+<li>3 NF : 属性不依赖于非主属性，即不能有传递依赖，比如 stu_id, class_id, class_name，stu_id 为主键，class_name 依赖于 class_id，对主键出现了传递依赖 stu_id -&gt; class_id -&gt; class_name</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/06/JVM/JVM/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1669,80 +2048,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/26/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%9A%E8%A1%8C%E4%B8%BA%E5%9E%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://gitee.com/h428/img/raw/master/base/avatar.jpg">
-      <meta itemprop="name" content="h428">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="h428 的个人博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/08/26/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%9A%E8%A1%8C%E4%B8%BA%E5%9E%8B/" class="post-title-link" itemprop="url">设计模式/设计模式：行为型</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-08-26 22:03:03" itemprop="dateCreated datePublished" datetime="2020-08-26T22:03:03+08:00">2020-08-26</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-09-17 22:15:10" itemprop="dateModified" datetime="2020-09-17T22:15:10+08:00">2020-09-17</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">设计模式</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/26/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E6%8B%9F%EF%BC%9A%E7%BB%93%E6%9E%84%E5%9E%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1768,80 +2073,6 @@
               <span class="post-meta-item-text">发表于</span>
 
               <time title="创建时间：2020-08-26 22:02:15" itemprop="dateCreated datePublished" datetime="2020-08-26T22:02:15+08:00">2020-08-26</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-09-17 22:15:10" itemprop="dateModified" datetime="2020-09-17T22:15:10+08:00">2020-09-17</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">设计模式</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/26/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%9A%E5%88%9B%E5%BB%BA%E5%9E%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://gitee.com/h428/img/raw/master/base/avatar.jpg">
-      <meta itemprop="name" content="h428">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="h428 的个人博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/08/26/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%9A%E5%88%9B%E5%BB%BA%E5%9E%8B/" class="post-title-link" itemprop="url">设计模式/设计模式：创建型</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-08-26 22:01:53" itemprop="dateCreated datePublished" datetime="2020-08-26T22:01:53+08:00">2020-08-26</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
